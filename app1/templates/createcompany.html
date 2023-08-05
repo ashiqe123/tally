@@ -1,5 +1,5 @@
-{% extends 'index1.html' %}
-{% block body %}
+{% extends 'nav.html' %}
+{% block content %}
 {% load static %}
 
 <script type="text/javascript"
@@ -235,7 +235,7 @@
         document.getElementsByName('underhidden').value = stId;
     }
 </script>
-<div class="m-0">
+<div style="background-color: #213b52;color: #fff;" class="m-0">
     <h6 class="bg-info text-light p-2 m-0 text-center">Company Creation</h6>
     <form class="p-3 " id="validate" style="background-color:rgba(0,0,0,.4);" method="post"
         action="{% url 'companycreate' %}" autocomplete="off">
