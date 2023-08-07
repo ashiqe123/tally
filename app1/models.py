@@ -680,7 +680,7 @@ class stock_itemcreation(models.Model):
     godown = models.ForeignKey(Godown_Items, on_delete=models.CASCADE,null=True,blank=True)
     name=models.CharField(max_length=100,null=True)
     alias=models.CharField(max_length=100,null=True)
-    units=models.IntegerField(max_length=100,null=True)
+    units=models.IntegerField()
     batches=models.CharField(max_length=10,null=True)
     trackdate=models.CharField(max_length=10,null=True)
     expirydate=models.CharField(max_length=10,null=True)
@@ -688,10 +688,10 @@ class stock_itemcreation(models.Model):
     typ_sply=models.CharField(max_length=100)
     set_alter=models.CharField(max_length=100)
     rate_of_duty=models.IntegerField()
-    quantity=models.IntegerField(max_length=100,null=True,blank=True)
-    rate=models.IntegerField(max_length=100,null=True,blank=True)
-    per=models.IntegerField(max_length=100,null=True,blank=True)
-    value=models.IntegerField(max_length=100,null=True,blank=True)
+    quantity=models.IntegerField()
+    rate=models.IntegerField()
+    per=models.IntegerField()
+    value=models.IntegerField()
 
 class analysis_view(models.Model):
     comp=models.ForeignKey(Companies,on_delete=models.CASCADE)
@@ -1121,7 +1121,7 @@ class salesledgervouchermodel(models.Model):
 
      #payroll
 class emp_category(models.Model):
-    company=models.ForeignKey(Companies,on_delete=models.CASCADE,blank=True,null=True)
+    company=models.ForeignKey(Companies,on_delete=models.CASCADE)
     cat_name= models.CharField(max_length=225)
     cat_alias= models.CharField(max_length=225)
     revenue_items=models.CharField(max_length=225)
