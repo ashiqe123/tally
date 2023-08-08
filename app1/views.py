@@ -1250,9 +1250,16 @@ def vouchpage(request):
     return render(request, 'vouchpage.html')
 
 def groupsummarypage(request):
-    gps=CreateStockGrp.objects.all()
+    if 't_id' in request.session:
+        if request.session.has_key('t_id'):
+            t_id = request.session['t_id']
+        else:
+            return redirect('/')
+        tally = Companies.objects.filter(id=t_id)
+        gps=CreateStockGrp.objects.all()
     con={
         'gps':gps,
+        'tally':tally
         } 
     return render(request,'groupsummarypage.html',con)
 
@@ -1264,9 +1271,16 @@ def groupsummarypage(request):
 #     return render(request,'catgroupsummary.html',con)
 
 def creategroups(request):
-    gps=StockGroup.objects.all()
+    if 't_id' in request.session:
+        if request.session.has_key('t_id'):
+            t_id = request.session['t_id']
+        else:
+            return redirect('/')
+        tally = Companies.objects.filter(id=t_id)
+        gps=StockGroup.objects.all()
     con={
         'gps':gps,
+        'tally':tally,
         } 
     return render(request, 'creategroup.html',con)   
 
@@ -4084,8 +4098,14 @@ def disable(request,pk):
 #     return redirect('shutcompany')
 
 def featurepage(request):
-    comp=Companies.objects.all()
-    return render(request,'featurepage.html',{'comp':comp})
+    if 't_id' in request.session:
+        if request.session.has_key('t_id'):
+            t_id = request.session['t_id']
+        else:
+            return redirect('/')
+        comp=Companies.objects.all()
+        tally = Companies.objects.filter(id=t_id)
+    return render(request,'featurepage.html',{'comp':comp,'tally':tally})
 
 
 
@@ -4879,7 +4899,7 @@ def disp_more_reports(request):#ann
             return redirect('/')
         tally = Companies.objects.filter(id=t_id)
         com=Companies.objects.filter(id=t_id)
-        return render(request,'dispmorereprt.html',{'com':com})
+        return render(request,'dispmorereprt.html',{'com':com,'tally':tally})
     return redirect('/')
 
 def salesregister(request):#ann
@@ -5198,7 +5218,7 @@ def balancesheet(request):
         #closing stock
     std1=stock_itemcreation.objects.filter(company_id =t_id).values()
     std=stock_itemcreation.objects.all()
-
+    tally = Companies.objects.filter(id=t_id)
     st=std1.filter(company_id =t_id).values('value') # opening stock
     rtfd=std1.filter(company_id =t_id).values('rate_of_duty')  
     print("hi")
@@ -5276,7 +5296,8 @@ def balancesheet(request):
              'dif':dif,
              'A':A,
              'L':L,
-             'closing_value':closing_value 
+             'closing_value':closing_value ,
+             'tally':tally,
             }
     return render(request,'balancesheet.html',context)  
     
@@ -7514,8 +7535,9 @@ def createcategory(request):
             t_id = request.session['t_id']
         else:
             return redirect('/')
+        tally = Companies.objects.filter(id=t_id)
         cat=CreateStockCateg.objects.filter(id=t_id)
-        con={'cat':cat} 
+        con={'cat':cat,'tally':tally} 
         return render(request, 'createcategory.html',con) 
     return redirect("/")
 
@@ -7542,8 +7564,9 @@ def catgroupsummary(request):
             cat=CreateStockCateg.objects.filter(id=t_id)
         else:
             return redirect('/')
+        tally = Companies.objects.filter(id=t_id)
         # cat=CreateStockCateg.objects.filter(id=t_id)
-        con={'cat':cat} 
+        con={'cat':cat,'tally':tally} 
         return render(request,'catgroupsummary.html',con)
     return redirect("/")
 
@@ -7553,10 +7576,11 @@ def liststockgroupviews(request):
             t_id = request.session['t_id']
         else:
             return redirect('/')
+        tally = Companies.objects.filter(id=t_id)
         # data=stockgroupcreation.objects.all()
         data=stockgroupcreation.objects.filter(company=t_id)
-        context={'data':data}
-        return render(request, 'liststockgroup.html',context)
+        context={'data':data,'tally':tally}
+    return render(request, 'liststockgroup.html',context)
 
 def stock_items(request):
     if 't_id' in request.session:
@@ -7597,9 +7621,11 @@ def liststockviews(request):
         else:
             return redirect('/')
         comp = Companies.objects.get(id = t_id)
+        tally = Companies.objects.filter(id=t_id)
         data=stock_itemcreation.objects.filter(company=comp)
         context = {
-                    'data':data
+                    'data':data,
+                    'tally':tally
                 }
         return render(request, 'liststock.html',context)
         
@@ -7735,8 +7761,9 @@ def selectledgerpage(request):
         else:
             return redirect('/')
     # data=tally_ledger.objects.all()
+    tally = Companies.objects.filter(id=t_id)
     data=tally_ledger.objects.filter(company=t_id)
-    context={'data':data}
+    context={'data':data,'tally':tally}
     return render(request,'selectledger.html',context)
 
 def ledgerpage(request,pk):
@@ -7801,8 +7828,9 @@ def grouppage(request):
             return redirect('/')
         # data=tally_group.objects.all()
         data=tally_group.objects.filter(company=t_id)
-        context={'data':data}
-        return render(request,'selectgroup.html',context)
+        tally = Companies.objects.filter(id=t_id)
+        context={'data':data,'tally':tally}
+    return render(request,'selectgroup.html',context)
 
 def Create_Group(request):
     data=tally_group.objects.all()
@@ -9203,8 +9231,14 @@ def index(request):
     return render(request, 'Statistics.html')
 
 def Statements_accounts(request):
+    if 't_id' in request.session:
+        if request.session.has_key('t_id'):
+            t_id = request.session['t_id']
+        else:
+            return redirect('/')
+        tally = Companies.objects.filter(id=t_id)
 
-        return render(request,'Statements_accounts.html')
+    return render(request,'Statements_accounts.html',{'tally':tally})
    
 
 def statistics(request):
@@ -10716,8 +10750,9 @@ def account_books_ledger(request):
         else:
             return redirect('/')
         # ledger = tally_ledger.objects.all()
+        tally = Companies.objects.filter(id=t_id)
         ledger = tally_ledger.objects.filter(company=t_id)
-        context = {'ledger' :ledger}
+        context = {'ledger' :ledger,'tally':tally}
         return render(request,'account_books_ledger.html',context)   
 
 def account_books_create_ledger(request):
@@ -12714,185 +12749,186 @@ def profit(request):
             uid = request.session['t_id']
         else:
             return redirect('/')
-    comp = Companies.objects.get(id=request.session['t_id'])
-
-    balance=tally_ledger.objects.all()
-    balance_py=create_payhead.objects.all()
-    balance_group=stock_itemcreation.objects.filter(company = comp)
-    total_grp=0
-    total_direct=0
-    total=0
-    total_income=0
-    total_purch=0
-    total_direct_exp=0
-    total_indirect=0
+        comp = Companies.objects.get(id=request.session['t_id'])
+        tally = Companies.objects.filter(id=comp.id)
+        balance=tally_ledger.objects.all()
+        balance_py=create_payhead.objects.all()
+        balance_group=stock_itemcreation.objects.filter(company = comp)
+        total_grp=0
+        total_direct=0
+        total=0
+        total_income=0
+        total_purch=0
+        total_direct_exp=0
+        total_indirect=0
     #sales account total
-    for i in balance:
-        if(i.under=='Sales_Account'):
-            if i.credit_period =='':
-                total+=0
-            else:
-                total+=int(i.credit_period)
-                #total+=int(i.creditdays_voucher)
-            
-    #indirect income total        
-    for i in balance_py:
-        if(i.under=='Income(Indirect)'):
-            if (i.leave_withpay== ''):
-                total_income+=0
-            
-            else:
-                total_income+=int(i.leave_withpay)    
+        for i in balance:
+            if(i.under=='Sales_Account'):
+                if i.credit_period =='':
+                    total+=0
+                else:
+                    total+=int(i.credit_period)
+                    #total+=int(i.creditdays_voucher)
                 
+        #indirect income total        
+        for i in balance_py:
+            if(i.under=='Income(Indirect)'):
+                if (i.leave_withpay== ''):
+                    total_income+=0
                 
-            if (i.leave_with_out_pay==''):
-                total_income+=0
+                else:
+                    total_income+=int(i.leave_withpay)    
                     
-            else:
-                total_income+=int(i.leave_with_out_pay)
-                
-            
-    for p in balance:
-         if p.under=='Income_Indirect':
-             
-            if p.credit_period=='':
-                total_income+=0
-            else:  
-                total_income+=int(p.credit_period)
-                #total_income+=int(p.creditdays_voucher)
-             
-    #direct income total
-             
-    for i in balance_py:
-        if(i.under=='Direct_Incomes'):
-            if (i.leave_with_out_pay== ''):
-                total_direct+=0
-                
-            else:
-                total_direct+=int(i.leave_with_out_pay) 
+                    
+                if (i.leave_with_out_pay==''):
+                    total_income+=0
+                        
+                else:
+                    total_income+=int(i.leave_with_out_pay)
                     
                 
-            if i.leave_withpay=='':
-               total_direct+=0   
-                   
-            else:
-               total_direct+=int(i.leave_withpay)
-               
-    
-    for p in balance:
-        if(p.under=='Direct_Incomes'):
-            if p.credit_period=='':
-                total_direct+=0
-            else:        
-              total_direct+=int(p.credit_period) 
-              #total_direct+=int(p.creditdays_voucher)
-            
-    #closing stock
-    for k in  balance_group:
-        if k.value=='':
-            total_grp+=0
+        for p in balance:
+            if p.under=='Income_Indirect':
+                
+                if p.credit_period=='':
+                    total_income+=0
+                else:  
+                    total_income+=int(p.credit_period)
+                    #total_income+=int(p.creditdays_voucher)
+                
+        #direct income total
+                
+        for i in balance_py:
+            if(i.under=='Direct_Incomes'):
+                if (i.leave_with_out_pay== ''):
+                    total_direct+=0
+                    
+                else:
+                    total_direct+=int(i.leave_with_out_pay) 
+                        
+                    
+                if i.leave_withpay=='':
+                    total_direct+=0   
+                    
+                else:
+                    total_direct+=int(i.leave_withpay)
+                
         
-        else:    
-            total_grp+=int(k.value)
+        for p in balance:
+            if(p.under=='Direct_Incomes'):
+                if p.credit_period=='':
+                    total_direct+=0
+                else:        
+                    total_direct+=int(p.credit_period) 
+                #total_direct+=int(p.creditdays_voucher)
+                
+        #closing stock
+        for k in  balance_group:
+            if k.value=='':
+                total_grp+=0
+            
+            else:    
+                total_grp+=int(k.value)
+            
+        #purchase account total 
         
-    #purchase account total 
-    
-    for i in balance:
-        if(i.under=='Purchase_Account'):
-            if (i.credit_period== ''):
-                total_purch+=0
-            else :  
-                total_purch+=int(i.credit_period)
-                #total_purch+=int(i.creditdays_voucher)
-    
-    #direct expenses total
-           
-    for i in balance_py:
-        if(i.under=='Direct Expenses'):
-            if (i.leave_with_out_pay== ''):
-                total_indirect+=0
-                
-            else:
-                total_direct_exp+=int(i.leave_with_out_pay)
-                    
-            if i.leave_withpay=='':
-              total_indirect+=0     
-                
-            else:
-               total_direct_exp+=int(i.leave_withpay) 
-                    
-    
-    for p in balance:
-        if(p.under=='Direct_Expenses'):
-            if p.credit_period =='':
-                total+=0
-            else:
-                total_direct_exp+=int(p.credit_period) 
-                #total_direct_exp+=int(p.creditdays_voucher) 
-            
-    #indirect expenses total   
-    
-    for i in balance_py:
-        if(i.under=='Indirect_Expenses'):
-             if (i.leave_with_out_pay== ''):
-                total_indirect+=0
-             else:
-                  total_indirect+=int(i.leave_with_out_pay)
-                    
-             if i.leave_withpay=='':
-                total_indirect+=0 
-                    
-             else:
-                total_indirect+=int(i.leave_withpay)
-             
-            
-    for p in balance:
-         if(p.under=='Expences_Indirect'):
-             if p.credit_period =='':
-                total_indirect+=0
-             else:
-                total_indirect+=int(p.credit_period) 
-               # total_indirect+=int(p.creditdays_voucher)    
-            
-    #closing stock
-    std=stock_itemcreation.objects.all()
-    # vouch=add_voucher.objects.all()
-    total_val=0
-    total_qun=0
-    # total_value=0
-    # total_qunity=0
-    
-    # for i in vouch:
-    #     if (i.voucher_type=='sales'):
-    #         total_value+=int(i.value)
-    #         total_qunity+=int(i.quntity)
-    #     elif (i.voucher_type=='purchase'):
-    #         total_val+=int(i.value) 
-    #         total_qun+=int(i.quntity)
-       
-    # for p in std:
-    #     total_val+=int(p.value)
-    #     total_qun+=int(p.quantity)
-                
-    
-    # closing_quntity=total_qun-total_qunity        
-    
-    for p in std:
-        if p.rate_of_duty=='':
-            total_val+=0
-        else:
-            total_val+=int(p.rate_of_duty)
-            #total_qun+=int(p.additional)
+        for i in balance:
+            if(i.under=='Purchase_Account'):
+                if (i.credit_period== ''):
+                    total_purch+=0
+                else :  
+                    total_purch+=int(i.credit_period)
+                    #total_purch+=int(i.creditdays_voucher)
         
-    closing_value=total_val      
-    context = {'total':total,
+        #direct expenses total
+            
+        for i in balance_py:
+            if(i.under=='Direct Expenses'):
+                if (i.leave_with_out_pay== ''):
+                    total_indirect+=0
+                    
+                else:
+                    total_direct_exp+=int(i.leave_with_out_pay)
+                        
+                if i.leave_withpay=='':
+                    total_indirect+=0     
+                    
+                else:
+                    total_direct_exp+=int(i.leave_withpay) 
+                        
+        
+        for p in balance:
+            if(p.under=='Direct_Expenses'):
+                if p.credit_period =='':
+                    total+=0
+                else:
+                    total_direct_exp+=int(p.credit_period) 
+                    #total_direct_exp+=int(p.creditdays_voucher) 
+                
+        #indirect expenses total   
+        
+        for i in balance_py:
+            if(i.under=='Indirect_Expenses'):
+                if (i.leave_with_out_pay== ''):
+                    total_indirect+=0
+                else:
+                    total_indirect+=int(i.leave_with_out_pay)
+                        
+                if i.leave_withpay=='':
+                    total_indirect+=0 
+                        
+                else:
+                    total_indirect+=int(i.leave_withpay)
+                
+                
+        for p in balance:
+            if(p.under=='Expences_Indirect'):
+                if p.credit_period =='':
+                    total_indirect+=0
+                else:
+                    total_indirect+=int(p.credit_period) 
+                # total_indirect+=int(p.creditdays_voucher)    
+                
+        #closing stock
+        std=stock_itemcreation.objects.all()
+        # vouch=add_voucher.objects.all()
+        total_val=0
+        total_qun=0
+        # total_value=0
+        # total_qunity=0
+        
+        # for i in vouch:
+        #     if (i.voucher_type=='sales'):
+        #         total_value+=int(i.value)
+        #         total_qunity+=int(i.quntity)
+        #     elif (i.voucher_type=='purchase'):
+        #         total_val+=int(i.value) 
+        #         total_qun+=int(i.quntity)
+        
+        # for p in std:
+        #     total_val+=int(p.value)
+        #     total_qun+=int(p.quantity)
+                    
+        
+        # closing_quntity=total_qun-total_qunity        
+        
+        for p in std:
+            if p.rate_of_duty=='':
+                total_val+=0
+            else:
+                total_val+=int(p.rate_of_duty)
+                #total_qun+=int(p.additional)
+            
+        closing_value=total_val      
+        context = {'total':total,
                'total_income':total_income,
                'total_direct':total_direct,
                'total_grp':total_grp,
                'total_purch':total_purch,
                'total_direct_exp':total_direct_exp,
                'total_indirect':total_indirect,
-               'closing_value':closing_value,}          
+               'closing_value':closing_value,
+               'tally':tally}          
     return render(request,'profit.html',context) 
 
 
@@ -13306,7 +13342,7 @@ def list_payment_voucher(request):
             t_id = request.session['t_id']
         else:
             return redirect('/')
-        
+        tally = Companies.objects.filter(id=t_id)
         comp = Companies.objects.get(id = t_id)
         ledger = tally_ledger.objects.filter(company_id = comp)
         # for i in range(len(ledger)):
@@ -13320,6 +13356,7 @@ def list_payment_voucher(request):
         voucher = Voucher.objects.filter(voucher_type = 'Payment',company = comp)
         context = {
                     'voucher': voucher,
+                    'tally':tally,
 
                 }
         return render(request,'list_payment_type.html',context)
@@ -13421,6 +13458,7 @@ def list_receipt_voucher(request):
         else:
             return redirect('/')
 
+        tally = Companies.objects.filter(id=t_id)
         comp = Companies.objects.get(id = t_id)
         ledger = tally_ledger.objects.filter(company_id = comp)
         # for i in range(len(ledger)):
@@ -13435,6 +13473,7 @@ def list_receipt_voucher(request):
         voucher = Voucher.objects.filter(voucher_type = 'Receipt',company = comp)
         context = {
                     'voucher' : voucher,
+                    'tally':tally,
                     }
         return render(request,'list_receipt_type.html',context)
 
@@ -15266,10 +15305,11 @@ def list_deb_voucher(request):
         cmp1 = Companies.objects.get(id=request.session['t_id'])
 
         
-
+        tally = Companies.objects.filter(id=t_id)
         voucher = Voucher.objects.filter(company=cmp1,voucher_type = 'Debit_Note')
         context = {
                     'voucher': voucher,
+                    'tally':tally,
 
                 }
         return render(request,'list_deb_type.html',context)
@@ -15280,10 +15320,12 @@ def list_crd_voucher(request):
             t_id = request.session['t_id']
         else:
             return redirect('/')
+        tally = Companies.objects.filter(id=t_id)
         cmp1 = Companies.objects.get(id=request.session['t_id'])
         voucher = Voucher.objects.filter(company=cmp1,voucher_type = 'Credit_Note')
         context = {
                     'voucher': voucher,
+                    'tally':tally,
 
                 }
         return render(request,'list_crd_type.html',context)
@@ -15471,10 +15513,11 @@ def list_contra_voucher(request):
 
                 ledger[i].save()
         #print(ledger)
-
+        tally = Companies.objects.filter(id=t_id)
         voucher = Voucher.objects.filter(voucher_type = 'contra')
         context = {
                     'voucher': voucher,
+                    'tally':tally,
 
                 }
         return render(request,'list_contra_type.html',context)
@@ -15665,7 +15708,7 @@ def stock_summary(request):
         #     group = CreateStockGrp.objects.filter(comp = comp).values()
         # else:
         group = CreateStockGrp.objects.filter(comp = comp).values().exclude(name = 'Primary')
-
+        tally = Companies.objects.filter(id=t_id)
         sum = item = 0
         for g in group:
 
@@ -15694,7 +15737,8 @@ def stock_summary(request):
                 'item' : item,
                 'value' : sum,
                 'startdate' : startdate,
-                'enddate' : enddate
+                'enddate' : enddate,
+                'tally':tally,
             }
     
     return render(request, 'stock_summary.html', context)
@@ -16356,9 +16400,11 @@ def list_journal_voucher(request):
 
                 ledger[i].save()
         #print(ledger)
+        tally = Companies.objects.filter(id=t_id)
         voucher = Voucher.objects.filter(voucher_type = 'Journal' , company = company)
         context = {
                     'voucher': voucher,
+                    'tally':tally,
 
                 }
         return render(request,'list_journal_type.html',context)
@@ -16494,10 +16540,11 @@ def listofbankledgers(request):
         data=CreateStockGrp.objects.filter(comp = t_id)
 
         ledg = tally_ledger.objects.filter(company = t_id, under__in = ['Bank_Accounts','Bank_OCC_AC','Bank_OD_A/c'])
-
+        tally = Companies.objects.filter(id=t_id)
         context={
                     'data':data, 
                     'ledg' : ledg,
+                    'tally':tally,
                 }
 
         return render(request,'list_bank_ledger.html',context)
@@ -16587,11 +16634,12 @@ def listbanks(request):
         
         comp = Companies.objects.get(id = t_id)
         ledgers = tally_ledger.objects.filter(company = comp, under__in = ['Bank_Accounts'])
-
+        tally = Companies.objects.filter(id=t_id)
         context = {
                     'company' : comp ,
                     'date' : date.today(),
                     'ledger_grp' : ledgers,
+                    'tally':tally,
                 }
         return render(request,'list_banks.html',context)
 
@@ -17444,12 +17492,13 @@ def sales_voucher(request):
             stock_items=stock_itemcreation.objects.all()
             party_ledg=tally_ledger.objects.filter(under__in=['Sundry_Debtors','Cash_in_Hand','Branch_Divisions','Sundry_Creditors'])
             sale_ledg=tally_ledger.objects.filter(under__in=['Sales_Account'])
+            tally = Companies.objects.filter(id=t_id)
             # sales invoice latest bill 
             # sa_automatic_bill=sales_invoice.objects.latest() 
             check_avai_sa=sales_invoice.objects.filter(dispatch_id=dis_id).exists()      
             check_avai_di=dispatch_detail.objects.exists()      
             return render(request,'salesvoucher.html',{'check_avai_di':check_avai_di,'check_avai_sa':check_avai_sa,'party_ledg':party_ledg,'sale_ledg':sale_ledg,'stock_items':stock_items,'stk_name':stk_name,'sal_one':sal_one,
-                                                       'curren_bal_Party_ac':curren_bal_Party_ac,'curren_bal_sale_led':curren_bal_sale_led,'sum_of_party':sum_of_party,'sum_of_sale_ledg':sum_of_sale_ledg})
+                                                       'curren_bal_Party_ac':curren_bal_Party_ac,'curren_bal_sale_led':curren_bal_sale_led,'sum_of_party':sum_of_party,'sum_of_sale_ledg':sum_of_sale_ledg,'tally':tally})
         
         if request.method=="POST":
           sl_in_id=request.POST.get('sl_inv_id')
