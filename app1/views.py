@@ -142,8 +142,14 @@ def select_c(request):
 	return render(request,'select_c.html',{'com':com})
 
 def shut_cmpny(request):
-	com=Companies.objects.all() 
-	return render(request, 'shut_cmpny.html',{'com':com})
+    if 't_id' in request.session:
+        if request.session.has_key('t_id'):
+            t_id = request.session['t_id']
+        else:
+            return redirect('/')
+        com=Companies.objects.all() 
+        tally=Companies.objects.filter(id=t_id)
+    return render(request,'shut_cmpny.html',{'com':com,'tally':tally})
 
 def shut(request,pk):
     c=Companies.objects.get(id=pk)
@@ -1509,6 +1515,12 @@ def secondarycatsummary(request,sk):
 
 
 def productsummary(request,sk):
+    if 't_id' in request.session:
+        if request.session.has_key('t_id'):
+            t_id = request.session['t_id']
+        else:
+            return redirect('/')
+    tally = Companies.objects.filter(id=t_id)
     gps=CreateStockGrp.objects.get(id=sk)
     cmp=company.objects.get(id='1')
     gg=StockGroup.objects.get(grp_name=gps.name)
@@ -1536,7 +1548,7 @@ def productsummary(request,sk):
     
     q=ttpq-ttsq   
     con={
-        'si':si,'ttpq':ttpq,'q':q,'ttpq':ttq,'w':w,'a':a,'y':y,'cmp':cmp
+        'si':si,'ttpq':ttpq,'q':q,'ttpq':ttq,'w':w,'a':a,'y':y,'cmp':cmp,'tally':tally
         } 
     return render(request, 'productsummary.html',con)
 
@@ -2499,53 +2511,60 @@ def companyCreate1(request):
     return render(request,'create_companys.html')
 
 def create_company(request):
-    if request.method=='POST':
-        dp=request.POST.get('dpath')
-        cn=request.POST.get('name')
-        mn=request.POST.get('mailing_name')
-        ca=request.POST.get('address1')
-        cs=request.POST.get('state')
-        cc=request.POST.get('country')
-        pin=request.POST.get('pincode')
-        tel=request.POST.get('telephone')
-        mob=request.POST.get('mobile')
-        fax=request.POST.get('fax')
-        email=request.POST.get('email')
-        web=request.POST.get('website')
-        fy=request.POST.get('fin_begin')
-        bks=request.POST.get('books_begin')
-        bc=request.POST.get('currency_symbol')
-        fr=request.POST.get('formal_name')
-        cmp=Companies.objects.filter(name=cn)
-        out=datetime.strptime (fy,'%Y-%m-%d')+timedelta (days=364) 
-        print(out)
-        a=out.date()
-        print(a)
-        if cmp:
-            messages.info(request,'Company name already exists!!')
+    if 't_id' in request.session:
+        if request.session.has_key('t_id'):
+            t_id = request.session['t_id']
+            und=CreateStockGrp.objects.filter(comp=t_id)
         else:
-            com=Companies(d_path=dp,
-                                name=cn,
-                                mailing_name=mn,
-                                address=ca,
-                                state=cs,
-                                country=cc,
-                                pincode=pin,
-                                telephone=tel,
-                                mobile=mob,
-                                fax=fax,
-                                email=email,
-                                website=web,
-                                fin_begin=fy,
-                                books_begin=bks,
-                                currency_symbol=bc,
-                                formal_name=fr,
-                                fin_end=a,)
-            com.save()
-            
+            return redirect('/')
+        tally = Companies.objects.filter(id=t_id)
+        if request.method=='POST':
+            dp=request.POST.get('dpath')
+            cn=request.POST.get('name')
+            mn=request.POST.get('mailing_name')
+            ca=request.POST.get('address1')
+            cs=request.POST.get('state')
+            cc=request.POST.get('country')
+            pin=request.POST.get('pincode')
+            tel=request.POST.get('telephone')
+            mob=request.POST.get('mobile')
+            fax=request.POST.get('fax')
+            email=request.POST.get('email')
+            web=request.POST.get('website')
+            fy=request.POST.get('fin_begin')
+            bks=request.POST.get('books_begin')
+            bc=request.POST.get('currency_symbol')
+            fr=request.POST.get('formal_name')
+            cmp=Companies.objects.filter(name=cn)
+            out=datetime.strptime (fy,'%Y-%m-%d')+timedelta (days=364) 
+            print(out)
+            a=out.date()
+            print(a)
+            if cmp:
+                messages.info(request,'Company name already exists!!')
+            else:
+                com=Companies(d_path=dp,
+                                    name=cn,
+                                    mailing_name=mn,
+                                    address=ca,
+                                    state=cs,
+                                    country=cc,
+                                    pincode=pin,
+                                    telephone=tel,
+                                    mobile=mob,
+                                    fax=fax,
+                                    email=email,
+                                    website=web,
+                                    fin_begin=fy,
+                                    books_begin=bks,
+                                    currency_symbol=bc,
+                                    formal_name=fr,
+                                    fin_end=a,)
+                com.save()
+                
                         
-            return render(request,'company_feature_form.html',{'com':com})
-    return render(request,'create_companys.html')
+            return render(request,'company_feature_form.html',{'com':com,'tally':tally})
+    return render(request,'create_companys.html',{'tally':tally})
 
 def companies_feature(request):
     return render(request,'company_feature_form.html')
@@ -2560,9 +2579,16 @@ def list_of_companies(request):
     return render(request,'list_of_companies.html',{'tally':tally})
 
 def select_company1(request):
+    if 't_id' in request.session:
+        if request.session.has_key('t_id'):
+            t_id = request.session['t_id']
+            und=CreateStockGrp.objects.filter(comp=t_id)
+        else:
+            return redirect('/')
+        tally = Companies.objects.filter(id=t_id)
     comp=Companies.objects.all()
     
-    return render(request,'select_company.html',{'comp1':comp})
+    return render(request,'select_company.html',{'comp1':comp,'tally':tally})
 
 def shut_company1(request):
 	com=Companies.objects.all() 
@@ -2932,7 +2958,7 @@ def load_voucher_type(request,pk):
             vou.save()
             print("added")
             return redirect('base')
-        return render(request,'load_voucher_type.html',{'i':vou})
+        return render(request,'load_voucher_type.html',{'i':vou,'tally':tally})
     return redirect('/')
 
 def voucher_type_alteration_secondary(request):
@@ -3006,6 +3032,13 @@ def load_currency(request):
     return render(request,'load_currency.html')
 
 def company_feature_form(request,pk):
+    if 't_id' in request.session:
+        if request.session.has_key('t_id'):
+            t_id = request.session['t_id']
+            und=CreateStockGrp.objects.filter(comp=t_id)
+        else:
+            return redirect('/')
+        tally = Companies.objects.filter(id=t_id)
     id=Companies.objects.get(id=pk)
     print(id)
 
@@ -3063,7 +3096,7 @@ def company_feature_form(request,pk):
                           company=id,)
         fc.save()
         print("added")
-    return render(request,'company_feature_form.html',{'com':id})
+    return render(request,'company_feature_form.html',{'com':id,'tally':tally})
 
 def load_rates_of_exchange(request):
     curcc=currencyAlteration.objects.all()
@@ -3195,7 +3228,7 @@ def currency_alteraion(request,pk):
             calt.save()
             print("added")
             return redirect('list_of_currency')
-        return render(request,'currency_alteraion.html',{'i':calt})
+        return render(request,'currency_alteraion.html',{'i':calt,'tally':tally})
     return redirect('/')
 
 
@@ -4371,8 +4404,14 @@ def change_company1(request):
     return render(request,'change_company1.html',{'com':com})        
 
 def shut_company(request):
+    if 't_id' in request.session:
+        if request.session.has_key('t_id'):
+            t_id = request.session['t_id']
+        else:
+            return redirect('/')
+        tally = Companies.objects.filter(id=t_id)
     com=Companies.objects.filter(status=True) 
-    return render(request,'shut_company.html',{'com':com})
+    return render(request,'shut_company.html',{'com':com,'tally':tally})
 
 def shut1(request,pk):
     com=Companies.objects.get(id=pk)
@@ -4909,7 +4948,7 @@ def salesregister(request):#ann
         else:
             return redirect('/')
         cmp=Companies.objects.get(id=t_id)
-    
+        tally = Companies.objects.filter(id=t_id)
         credit=Sales.objects.all().annotate(month=TruncMonth('sales_date')).values('month').annotate(total=Sum('total')).order_by('month').values("month", "total")      
         sales=Sales.objects.all()                     
         a=sales.filter(sales_date__month='04')
@@ -4951,7 +4990,7 @@ def salesregister(request):#ann
         data['may']=may
         data['cmp']=cmp
         total1=sum(sales.values_list('total',flat=True)) 
-        return render(request,'salesregister.html',{'total1':total1,'data':data})         
+        return render(request,'salesregister.html',{'total1':total1,'data':data,'tally':tally})         
 
 def purchaseregister(request):#ann
     if 't_id' in request.session:
@@ -4959,7 +4998,7 @@ def purchaseregister(request):#ann
             t_id = request.session['t_id']
         else:
             return redirect('/')
-        cmp=Companies.objects.get(id=t_id)
+        tally = Companies.objects.filter(id=t_id)
     P=Purchase.objects.all()
     a=P.filter(purchase_date__month='04')
     april= sum(a.values_list('total',flat=True))
@@ -4998,10 +5037,10 @@ def purchaseregister(request):#ann
     data['febuary']=febuary
     data['march']=march 
     data['may']=may
-    data['cmp']=cmp
+    data['cmp']=tally
     
     total1 = sum(P.values_list('total', flat=True))  
-    return render(request,'purchaseregister.html',{'total1':total1,'data':data}) 
+    return render(request,'purchaseregister.html',{'total1':total1,'data':data,'tally':tally}) 
 
 def journalregister(request):#ann
     if 't_id' in request.session:
@@ -5010,6 +5049,7 @@ def journalregister(request):#ann
         else:
             return redirect('/')
         cmp=Companies.objects.get(id=t_id)
+        tally = Companies.objects.filter(id=t_id)
     P=Journal.objects.all()
     april=P.filter(journal_date__month='04').count()
     may=P.filter(journal_date__month='05').count()
@@ -5037,7 +5077,7 @@ def journalregister(request):#ann
     data['march']=march 
     data['may']=may
     data['cmp']=cmp
-    return render(request,'journal_report.html',{'data':data})  
+    return render(request,'journal_report.html',{'data':data,'tally':tally})  
 
 def listofsalesvoucher(request,pk):#ann
    # s=Sales.objects.all()
@@ -5046,6 +5086,7 @@ def listofsalesvoucher(request,pk):#ann
             t_id = request.session['t_id']
         else:
             return redirect('/')
+        tally = Companies.objects.filter(id=t_id)
         cmp=Companies.objects.get(id=t_id)
     m=pk
     s= Sales.objects.filter(sales_date__year='2022', 
@@ -5080,7 +5121,7 @@ def listofsalesvoucher(request,pk):#ann
              msg1="1-Dec-22 to 31-Dec-22"     
     else:
         msg1="01-July-22 to 31-July-22" 
-    return render(request,'listofsalesvouchers.html',{'sales':s,'msg1':msg1,'total1':total1,'cmp':cmp})  
+    return render(request,'listofsalesvouchers.html',{'sales':s,'msg1':msg1,'total1':total1,'cmp':cmp,'tally':tally})  
 
 
 def listofpurchasevoucher(request,pk):#ann
@@ -5090,6 +5131,7 @@ def listofpurchasevoucher(request,pk):#ann
         else:
             return redirect('/')
         cmp=Companies.objects.get(id=t_id)
+        tally = Companies.objects.filter(id=t_id)
     m=pk
     p= Purchase.objects.filter(purchase_date__year='2022', 
                      purchase_date__month=m)   
@@ -5121,7 +5163,7 @@ def listofpurchasevoucher(request,pk):#ann
     else:
         msg1="01-July-22 to 31-July-22"      
     print(p)         
-    return render(request,'listofpurchasevouchers.html',{'purchase':p,'msg1':msg1,'total1':total1,'cmp':cmp})
+    return render(request,'listofpurchasevouchers.html',{'purchase':p,'msg1':msg1,'total1':total1,'cmp':cmp,'tally':tally})
 
 def listjournalvouchers(request,pk):#ann 
     if 't_id' in request.session:
@@ -5130,6 +5172,7 @@ def listjournalvouchers(request,pk):#ann
         else:
             return redirect('/')
         cmp=Companies.objects.get(id=t_id)
+        tally = Companies.objects.filter(id=t_id)
     m=pk
     j= Journal.objects.filter(journal_date__year='2022', 
                      journal_date__month=m)   
@@ -5160,7 +5203,7 @@ def listjournalvouchers(request,pk):#ann
              msg1="1-Dec-22 to 31-Dec-22"      
     else:
         msg1="01-July-22 to 31-July-22"                        
-    return render(request,'listjournalvouchers.html',{'journal':j,'msg1':msg1,'cmp':cmp,'total1':total1})
+    return render(request,'listjournalvouchers.html',{'journal':j,'msg1':msg1,'cmp':cmp,'total1':total1,'tally':tally})
 
 ###Balance sheet####
 #ann
@@ -5314,7 +5357,7 @@ def groupsummary(request):#ann
         gnam=g.filter(group_under='Current Liabilities').values()
         comp = Companies.objects.get(id =t_id)
         c=tally_ledger.objects.filter(under='Current_Liabilities',company_id=t_id,current_blnc_type='Cr').values() 
-       
+        tally=Companies.objects.filter(id=t_id)
         d=tally_ledger.objects.filter(under='Current_Liabilities',company_id=t_id,current_blnc_type='Dr').values() 
         print("hhh")
         cc=sum(c.values_list('current_blnc',flat=True))
@@ -5330,7 +5373,8 @@ def groupsummary(request):#ann
                 'company':comp,
                 'ledger':ledger,
                 'gnam':gnam ,
-                's':s                 
+                's':s,
+                'tally':tally                 
               }       
         return render(request,'groupsummary.html',context)
 
@@ -5345,7 +5389,7 @@ def bd_groupsummary(request):#ann
         g=tally_group.objects.filter(company_id =t_id).values()  
         comp = Companies.objects.get(id =t_id)
         c=tally_ledger.objects.filter(under='Branch_Divisions',company_id=t_id,current_blnc_type='Cr').values() 
-        
+        tally=Companies.objects.filter(id=t_id)
         d=tally_ledger.objects.filter(under='Branch_Divisions',company_id=t_id,current_blnc_type='Dr').values() 
         print("hhh")
         cc=sum(c.values_list('current_blnc',flat=True))
@@ -5363,7 +5407,8 @@ def bd_groupsummary(request):#ann
                 'company':comp,
                 'ledger':ledger,
                 'gnam':gnam ,
-                's':s                 
+                's':s   ,
+                'tally':tally              
               }       
         return render(request,'vchr_grp_summary.html',context)
           
@@ -5466,6 +5511,7 @@ def ledgersummary1(request):#ann
         d=tally_ledger.objects.filter(under='Current_Liabilities',current_blnc_type='Dr',company_id=t_id).values() 
         print("hhh")
         cc=sum(c.values_list('current_blnc',flat=True))
+        tally=Companies.objects.filter(id=t_id)
         print(cc)
         s=0  
         gnam='Current_Liabilities'
@@ -5480,7 +5526,8 @@ def ledgersummary1(request):#ann
                 'company':comp,
                 'ledger':ledger,
                 'gnam':gnam ,
-                's':s                 
+                's':s ,
+                'tally':tally,                
               }       
         return render(request,'vchr_grp_summary.html',context)         
           
@@ -5506,17 +5553,30 @@ def ledgersummary(request,lk,sk):#ann
     
   #...views
 def listofledger(request,pk):#ann
-     m=pk
-     return render(request, 'listofledger.html')     
+    if 't_id' in request.session:
+        if request.session.has_key('t_id'):
+            t_id = request.session['t_id']
+        else:
+            return redirect('/')
+        tally=Companies.objects.filter(id=t_id)
+        m=pk
+        return render(request, 'listofledger.html',{'tally':tally})     
 
 ###nithya
 def capital_group_summary(request):
+    if 't_id' in request.session:
+        if request.session.has_key('t_id'):
+            t_id = request.session['t_id']
+        else:
+            return redirect('/')
+
 
         group= tally_group.objects.get(group_name='Capital Account')
         comp = Companies.objects.get(id = group.company_id)
         voucher = Ledger_vouchers_new.objects.filter(group_id = group.id)
         ledger=tally_ledger.objects.filter(grp_id = group.id)
-        
+
+        tally=Companies.objects.filter(id=t_id)
         debit_total = credit_total = 0
 
         for led in ledger:
@@ -5532,14 +5592,14 @@ def capital_group_summary(request):
         c = credit_total
 
         if total_balance.objects.filter(group_id = group.id).exists():
-            balance = total_balance.objects.get(group_id = group.id)
-            balance.total_debit = debit_total
-            balance.total_credit = credit_total
-            
-            balance.save()
+                balance = total_balance.objects.get(group_id = group.id)
+                balance.total_debit = debit_total
+                balance.total_credit = credit_total
+                
+                balance.save()
         else :
-            balance = total_balance( total_debit =debit_total, total_credit = credit_total,company = comp,group = group)
-            balance.save()
+                balance = total_balance( total_debit =debit_total, total_credit = credit_total,company = comp,group = group)
+                balance.save()
 
         context = {
                     'company':comp,
@@ -5548,9 +5608,10 @@ def capital_group_summary(request):
                     'voucher':voucher, 
                     'd': d,
                     'c':c,
+                    'tally':tally,
                     
         }    
-        return render(request,'group_summary.html',context)
+    return render(request,'group_summary.html',context)
         
 def ledgermonthly(request,id):
 
@@ -5725,7 +5786,15 @@ def ledger_vouchers(request,pk,id):
     return render(request,'ledgr_voucher.html',context)
     
 def loanl_group_summary(request):
+    
+    if 't_id' in request.session:
+        if request.session.has_key('t_id'):
+            t_id = request.session['t_id']
+        else:
+            return redirect('/')
 
+
+        tally=Companies.objects.filter(id=t_id)
         group= tally_group.objects.get(group_name='Loans-Liability')
         comp = Companies.objects.get(id = group.company_id)
         voucher = Ledger_vouchers_new.objects.filter(group_id = group.id)
@@ -5764,11 +5833,20 @@ def loanl_group_summary(request):
                     'voucher':voucher, 
                     'd': d,
                     'c':c,
+                    'tally':tally
         }
             
         return render(request,'Loansgroup_summary.html',context)
 
 def fixed_assets_group_summary(request):
+    if 't_id' in request.session:
+        if request.session.has_key('t_id'):
+            t_id = request.session['t_id']
+        else:
+            return redirect('/')
+
+
+        tally=Companies.objects.filter(id=t_id)
 
     group= tally_group.objects.get(group_name='Fixed Assets')
     comp = Companies.objects.get(id = group.company_id)
@@ -5808,6 +5886,7 @@ def fixed_assets_group_summary(request):
         'voucher':voucher, 
         'd': d,
         'c':c,
+        'tally':tally
         }
             
     return render(request,'Fixassets_group_summary.html',context)
@@ -5820,6 +5899,14 @@ def quit(request):
 
 #......................Neethu.......................
 def investments(request):
+    if 't_id' in request.session:
+        if request.session.has_key('t_id'):
+            t_id = request.session['t_id']
+        else:
+            return redirect('/')
+
+
+        tally=Companies.objects.filter(id=t_id)
         group= tally_group.objects.get(group_name='investments')
         comp = Companies.objects.get(id = group.company_id)
         voucher = Ledger_vouchers_new.objects.filter(group_id = group.id)
@@ -5856,6 +5943,7 @@ def investments(request):
                     'voucher':voucher, 
                     'd': d,
                     'c':c,
+                    'tally':tally
                     
         }
         return render(request,'groupsummaryinvestments1.html',context)
@@ -5955,6 +6043,15 @@ def monthly_summary(request,pk):
             cred_balance=credit-total_debit
         return render(request,'monthlysummary.html',{'cmp':tally,'led':ledg,'open':open,'credit':credit,'debit':debit,'deb_balance':deb_balance,'talled':talled})
 def currentassets(request):
+    if 't_id' in request.session:
+        if request.session.has_key('t_id'):
+            t_id = request.session['t_id']
+        else:
+            return redirect('/')
+
+
+        tally=Companies.objects.filter(id=t_id)
+
         group= tally_group.objects.get(group_name='Current Assets')
         comp = Companies.objects.get(id = group.company_id)
         voucher = Ledger_vouchers_new.objects.filter(group_id = group.id)
@@ -5991,51 +6088,11 @@ def currentassets(request):
                     'voucher':voucher, 
                     'd': d,
                     'c':c,
+                    'tally':tally
                     
         }
         return render(request,'groupsummaryinvestments1.html',context)
         
-def currentassets(request):
-        group= tally_group.objects.get(group_name='Current Assets')
-        comp = Companies.objects.get(id = group.company_id)
-        voucher = Ledger_vouchers_new.objects.filter(group_id = group.id)
-        ledger=tally_ledger.objects.filter(grp_id = group.id)
-        
-        debit_total = credit_total = 0
-
-        for led in ledger:
-
-            led.col = 0 if led.current_blnc is None else led.current_blnc
-            if led.current_blnc_type == 'Dr':
-                debit_total  = debit_total +  led.current_blnc
-            else:
-                credit_total = credit_total + led.current_blnc
-           
-        
-        d = debit_total
-        c = credit_total
-
-        if total_balance.objects.filter(group_id = group.id).exists():
-            balance = total_balance.objects.get(group_id = group.id)
-            balance.total_debit = debit_total
-            balance.total_credit = credit_total
-            
-            balance.save()
-        else :
-            balance = total_balance( total_debit =debit_total, total_credit = credit_total,company = comp,group = group)
-            balance.save()
-
-        context = {
-                    'company':comp,
-                    'ledger':ledger,
-                    'group':group,
-                    'voucher':voucher, 
-                    'd': d,
-                    'c':c,
-                    
-        }
-        return render(request,'groupsummaryinvestments1.html',context)
-      
 def stockgroupsummary(request):
     # if 't_id' in request.session:
     #     if request.session.has_key('t_id'):
@@ -6445,12 +6502,24 @@ def savestockitem(request):
 #......................Jerin........................
 
 def receivabl(request):
-    rec=receivable.objects.all()
-    return render (request,'receivable.html',{'rec':rec}) 
+    if 't_id' in request.session:
+        if request.session.has_key('t_id'):
+            t_id = request.session['t_id']
+        else:
+            return redirect('/')
+        tally=Companies.objects.filter(id=t_id)
+        rec=receivable.objects.all()
+    return render (request,'receivable.html',{'rec':rec,'tally':tally}) 
 
 def payabl(request):
+    if 't_id' in request.session:
+        if request.session.has_key('t_id'):
+            t_id = request.session['t_id']
+        else:
+            return redirect('/')
+        tally=Companies.objects.filter(id=t_id)
     pay=payable.objects.all()
-    return render(request,'payable.html',{'pay':pay})  
+    return render(request,'payable.html',{'pay':pay,'tally':tally})  
 
 def creategroup1(request):
     grp=GroupModel.objects.all()
@@ -6491,8 +6560,14 @@ def create_group1(request):
         
 
 def grcreate(request):
+    if 't_id' in request.session:
+        if request.session.has_key('t_id'):
+            t_id = request.session['t_id']
+        else:
+            return redirect('/')
+        tally=Companies.objects.filter(id=t_id)
     gr=GroupModel.objects.all()
-    return render(request,'grcreate.html',{'gr':gr})    
+    return render(request,'grcreate.html',{'gr':gr,'tally':tally})    
 
 def createledger(request):
     grp=GroupModel.objects.all()
@@ -6507,8 +6582,14 @@ def debi(request):
     return render(request,'debit.html',{'debi':debi})   
 
 def ledgerlist(request):
+    if 't_id' in request.session:
+        if request.session.has_key('t_id'):
+            t_id = request.session['t_id']
+        else:
+            return redirect('/')
+        tally=Companies.objects.filter(id=t_id)
     ledg=ledgercreation.objects.all()
-    return render(request,'ledgerlist.html',{'ledg':ledg})    
+    return render(request,'ledgerlist.html',{'ledg':ledg,'tally':tally})    
 
 def ledgercreations(request):
     if request.method == 'POST':
@@ -7708,6 +7789,12 @@ def querystockview(request,pk):
     return render(request, 'querystocks.html',context)
 
 def stockgroupanalysisview(request):
+    if 't_id' in request.session:
+        if request.session.has_key('t_id'):
+            t_id = request.session['t_id']
+        else:
+            return redirect('/')
+        tally=Companies.objects.filter(id=t_id)
     data=analysis_view.objects.all()
     sum1 = 0
     sum2 = 0
@@ -7715,7 +7802,7 @@ def stockgroupanalysisview(request):
         sum1 += a.ivalue
     for b in data:
         sum2 += b.ovalue
-    context={'data':data,'sum1':sum1,'sum2':sum2}
+    context={'data':data,'sum1':sum1,'sum2':sum2,'tally':tally}
     return render(request, 'stockgroupanalysis.html',context)
 
 # noufal 
@@ -7767,6 +7854,12 @@ def selectledgerpage(request):
     return render(request,'selectledger.html',context)
 
 def ledgerpage(request,pk):
+    if 't_id' in request.session:
+        if request.session.has_key('t_id'):
+            t_id = request.session['t_id']
+        else:
+            return redirect('/')
+        tally=Companies.objects.filter(id=t_id)
     ndata=tally_ledger.objects.get(id=pk)
     data=ledgeranalysismodel.objects.filter(lpert=ndata)
     sum1=0
@@ -7775,7 +7868,7 @@ def ledgerpage(request,pk):
         sum1+=a.lpvalue
     for b in data:
         sum2+=b.svalue
-    return render(request,'ledgeranalisys.html',{'data':data,'sum1':sum1,'sum2':sum2})
+    return render(request,'ledgeranalisys.html',{'data':data,'sum1':sum1,'sum2':sum2,'tally':tally})
 
 
 def ledgeritem(request,pk):
@@ -7855,6 +7948,12 @@ def creategroupviews(request):
         return redirect('grouppage')
 
 def groupanalisys(request,pk):
+    if 't_id' in request.session:
+        if request.session.has_key('t_id'):
+            t_id = request.session['t_id']
+        else:
+            return redirect('/')
+        tally=Companies.objects.filter(id=t_id)
     ndata=tally_group.objects.get(id=pk)
     data=groupanalysismodel.objects.filter(pert=ndata)
     sum1=0
@@ -7863,7 +7962,7 @@ def groupanalisys(request,pk):
         sum1+=a.pvalue
     for b in data:
         sum2+=b.svalue
-    context={'data':data,'sum1':sum1,'sum2':sum2}
+    context= {'data':data,'sum1':sum1,'sum2':sum2,'tally':tally}
     return render(request,'groupanalisys.html',context)
 
 def groupitem(request,pk):
@@ -8149,7 +8248,12 @@ def addemp_group2(request):
 
 
 def salary1(request):
-    
+    if 't_id' in request.session:
+        if request.session.has_key('t_id'):
+            t_id = request.session['t_id']
+        else:
+            return redirect('/')
+    tally=Companies.objects.filter(id=t_id)
     pk=create_payhead.objects.all()
     if request.method=='POST':
         name1=request.POST['name']
@@ -8172,7 +8276,7 @@ def salary1(request):
         )
         std.save()
         return redirect('salary1')
-    return render(request,'salary.html',{'pk':pk}) 
+    return render(request,'salary.html',{'pk':pk,'tally':tally}) 
 
 def load(request):
     did=request.GET.get("id")
@@ -8267,7 +8371,7 @@ def payhead2(request):
         std4.save()
         messages.success(request,'successfully Added !!!')
         return redirect('salary1')
-    return render(request,'payhead_secondary.html')     
+    return render(request,'payhead_secondary.html',{'tally':tally})     
 
 
 def stunits(request):
@@ -8641,8 +8745,14 @@ def payheads1(request):
     return render(request,'payheads2.html',{'p':data,'tally':tally})  
 
 def payheads2(request):
+    if 't_id' in request.session:
+        if request.session.has_key('t_id'):
+            t_id = request.session['t_id']
+        else:
+            return redirect('/')
+        tally = Companies.objects.filter(id=t_id)
     data=Create_attendence1.objects.all()
-    return render(request,'load_payheads.html',{'p':data})   
+    return render(request,'load_payheads.html',{'p':data,'tally':tally})   
 
 
 def add_payheads(request):
@@ -8777,12 +8887,18 @@ def payhead_edit2(request,pk):
     
 
 def payhead_edit(request,pk):
+    if 't_id' in request.session:
+        if request.session.has_key('t_id'):
+            t_id = request.session['t_id']
+        else:
+            return redirect('/')
+        tally = Companies.objects.filter(id=t_id)
     data=create_payhead1.objects.get(id=pk)
     data2=compute_information1.objects.get(id=pk)
     data3=Rounding1.objects.get(id=pk)
     data4=gratuity1.objects.get(id=pk)
     context={'p':data,'p2':data2,
-    'p3':data3,'p4':data4
+    'p3':data3,'p4':data4,'tally':tally
     }
     return render(request,'payhead_edit.html',context) 
 
@@ -8799,10 +8915,16 @@ def attendence4(request):
 
 
 def attendence2_2(request):
+    if 't_id' in request.session:
+        if request.session.has_key('t_id'):
+            t_id = request.session['t_id']
+        else:
+            return redirect('/')
+        tally = Companies.objects.filter(id=t_id)
     data=Create_attendence1.objects.all()
     data2=units1.objects.all()
 
-    context={'p':data,
+    context={'p':data,'tally':tally,
     'p2':data2}
     return render(request,'load_attendence.html',context)
 
@@ -8825,9 +8947,15 @@ def attendence3(request):
 
 
 def attendence_edit(request,pk):
+    if 't_id' in request.session:
+        if request.session.has_key('t_id'):
+            t_id = request.session['t_id']
+        else:
+            return redirect('/')
+        tally = Companies.objects.filter(id=t_id)
     data=Create_attendence1.objects.get(id=pk)
     data2=Create_attendence1.objects.all()
-    context={'p':data,
+    context={'p':data,'tally':tally,
     'p2':data2}
     return render(request,'attendence_edit.html',context) 
 
@@ -8857,11 +8985,17 @@ def employee1(request):
     return render(request,'employe2.html',context)   
 
 def employee2(request):
+    if 't_id' in request.session:
+        if request.session.has_key('t_id'):
+            t_id = request.session['t_id']
+        else:
+            return redirect('/')
+    tally=Companies.objects.filter(id=t_id)
     obj=bank3.objects.all()
     data=Employee1.objects.all()
     data2=empgroup2.objects.all()
     context={'std':data,
-    'p':obj,'p3':data2}
+    'p':obj,'p3':data2,'tally':tally}
     return render(request,'list_of_employe.html',context)
 
 def addemployee1(request):
@@ -9010,13 +9144,25 @@ def add_voucher2(request):
     return render(request,'payroll2.html',{'data':emp,'tally':tally}) 
 
 def add_voucher3(request):
+    if 't_id' in request.session:
+        if request.session.has_key('t_id'):
+            t_id = request.session['t_id']
+        else:
+            return redirect('/')
+        tally = Companies.objects.filter(id=t_id)
     emp=create_VoucherModels1.objects.all()
-    return render(request,'load_payroll.html',{'data':emp}) 
+    return render(request,'load_payroll.html',{'data':emp,'tally':tally}) 
 
 def add_voucher_edit(request,pk):
+    if 't_id' in request.session:
+        if request.session.has_key('t_id'):
+            t_id = request.session['t_id']
+        else:
+            return redirect('/')
+        tally = Companies.objects.filter(id=t_id)
     emp=create_VoucherModels1.objects.get(id=pk)
     data2=create_VoucherModels1.objects.all()
-    context={'p':emp,
+    context={'p':emp,'tally':tally,
     'data':data2}
     return render(request,'payrolledit.html',context) 
 
@@ -9043,8 +9189,14 @@ def add_voucher_edit2(request,pk):
 
 
 def unit(request):
+    if 't_id' in request.session:
+        if request.session.has_key('t_id'):
+            t_id = request.session['t_id']
+        else:
+            return redirect('/')
+        tally = Companies.objects.filter(id=t_id)
     p=units1.objects.all()
-    return render(request, 'unit.html',{'p2':p})
+    return render(request, 'unit.html',{'p2':p,'tally':tally})
 
 def unit2(request):
     if 't_id' in request.session:
@@ -9057,8 +9209,14 @@ def unit2(request):
     return render(request,'unit2.html',{'data':p,'tally':tally})
 
 def unit3(request):
+    if 't_id' in request.session:
+        if request.session.has_key('t_id'):
+            t_id = request.session['t_id']
+        else:
+            return redirect('/')
+        tally = Companies.objects.filter(id=t_id)
     p=units1.objects.all()
-    return render(request,'unit3.html',{'data':p})
+    return render(request,'unit3.html',{'data':p,'tally':tally})
 
 def add_unit(request):
     if request.method=='POST':
@@ -9076,8 +9234,14 @@ def add_unit(request):
 
 
 def unit_edit(request,pk):
+    if 't_id' in request.session:
+        if request.session.has_key('t_id'):
+            t_id = request.session['t_id']
+        else:
+            return redirect('/')
+        tally = Companies.objects.filter(id=t_id)
     data=units1.objects.get(id=pk)
-    return render(request,'unit_edit.html',{'p':data})
+    return render(request,'unit_edit.html',{'p':data,'tally':tally})
 
 def unit_edit2(request,pk):
     std=units1.objects.get(id=pk)
@@ -9248,7 +9412,7 @@ def statistics(request):
             t_id = request.session['t_id']
         else:
             return redirect('/')
-
+        tally=Companies.objects.filter(id=t_id)
         comp = Companies.objects.get(id = t_id)
         vouchers =Voucher.objects.filter(company = comp).order_by('voucher_name')
         vouch_total = 0
@@ -9289,6 +9453,7 @@ def statistics(request):
             'att_count' : att_count,
             'empg_count' : empg_count,
             'emp_count' : emp_count,
+            'tally':tally
             }
 
         return render(request, 'statistics.html',context)
@@ -9421,7 +9586,7 @@ def Statistics_voucher_monthly_register(request,id):
             t_id = request.session['t_id']
         else:
             return redirect('/')
-        
+        tally=Companies.objects.filter(id=t_id)
         comp = Companies.objects.get(id=t_id)
         vouch = Voucher.objects.get(id=id)
         v_name= vouch.voucher_name
@@ -9441,7 +9606,8 @@ def Statistics_voucher_monthly_register(request,id):
         context = {
             'entries_by_month': entries_by_month,
             'vouch':vouch,
-            'comp':comp
+            'comp':comp,
+            'tally':tally
             
         }
 
@@ -10345,14 +10511,8 @@ def Statistics_Delete_Voucher_Type(request,pk):
     return redirect('Statistics_Voucher_Types')
 
 #--------------------------------------------Jerin-------------------------------------------
-def receivabl(request):
-    rec=receivable.objects.all()
-    return render (request,'receivable.html',{'rec':rec})    
 
 
-def payabl(request):
-    pay=payable.objects.all()
-    return render(request,'payable.html',{'pay':pay})   
 
 def creategroup(request):
     grp=GroupModel.objects.all()
@@ -10362,25 +10522,31 @@ def creategroup(request):
 
         
 
-def grcreate(request):
-    gr=GroupModel.objects.all()
-    return render(request,'grcreate.html',{'gr':gr})    
 
 def createledger(request):
     grp=GroupModel.objects.all()
     return render (request,'createledger.html',{'grp':grp})        
 
 def credit(request):
+    if 't_id' in request.session:
+        if request.session.has_key('t_id'):
+            t_id = request.session['t_id']
+        else:
+            return redirect('/')
+        tally=Companies.objects.filter(id=t_id)
     cre=cred.objects.all()
-    return render(request,'credit.html',{'cre':cre})
+    return render(request,'credit.html',{'cre':cre,'tally':tally})
 
 def debi(request):
+    if 't_id' in request.session:
+        if request.session.has_key('t_id'):
+            t_id = request.session['t_id']
+        else:
+            return redirect('/')
+        tally=Companies.objects.filter(id=t_id)
     debi=debit.objects.all()
-    return render(request,'debit.html',{'debi':debi})    
+    return render(request,'debit.html',{'debi':debi,'tally':tally})    
 
-def ledgerlist(request):
-    ledg=ledgercreation.objects.all()
-    return render(request,'ledgerlist.html',{'ledg':ledg})    
 
 
 
@@ -10576,7 +10742,13 @@ def nw(request):
     return render(request,'nw.html',{'ledg':ledi})
 
 def outstanding(request):
-    return render(request,'outstd.html')
+    if 't_id' in request.session:
+        if request.session.has_key('t_id'):
+            t_id = request.session['t_id']
+        else:
+            return redirect('/')
+        tally=Companies.objects.filter(id=t_id)
+    return render(request,'outstd.html',{'tally':tally})
 
 #Maneesha
 
@@ -10588,6 +10760,7 @@ def creditnoteregister(request):
         else:
             return redirect('/')
         cmp=Companies.objects.get(id=t_id)
+        tally=Companies.objects.filter(id=t_id)
         credit=creditreg.objects.all()
         months = [i.month for i in creditreg.objects.values_list('date', flat=True)]
         april=creditreg.objects.filter(date__month='04').count()
@@ -10616,6 +10789,7 @@ def creditnoteregister(request):
         data['february']=february
         data['march']=march
         data['cmp']=cmp
+        data['tally']=tally
         return render(request,'creditnoteregister.html',data)
 
 def debitnoteregister(request):
@@ -10625,6 +10799,7 @@ def debitnoteregister(request):
         else:
             return redirect('/')
         cmp=Companies.objects.get(id=t_id)
+        tally = Companies.objects.filter(id=t_id)
         print(cmp)
         april=debitnote.objects.filter(date__month='04').count()
         may=debitnote.objects.filter(date__month='05').count() 
@@ -10652,7 +10827,8 @@ def debitnoteregister(request):
         data['february']=february
         data['march']=march
         data['cmp']=cmp
-        return render(request,'debitnoteregister.html',data)
+        data['tally']=tally
+        return render(request,'debitnoteregister.html',data,)
 
 def voucherregister(request,pk):
     m=pk
@@ -10662,6 +10838,7 @@ def voucherregister(request,pk):
         else:
             return redirect('/')
         cmp=Companies.objects.get(id=t_id)
+        tally=Companies.objects.filter(id=t_id)
         print(pk)
         voucher=creditreg.objects.filter(date__month=pk)
         print(voucher)
@@ -10696,7 +10873,7 @@ def voucherregister(request,pk):
         msg1="01-July-22 to 31-July-22"               
           
     
-    return render(request,'voucherregister.html',{'voucher':voucher,'total':total,'cmp':cmp,'msg1':msg1})
+    return render(request,'voucherregister.html',{'voucher':voucher,'total':total,'cmp':cmp,'msg1':msg1,'tally':tally})
 
 def voucherregisterdebit(request,pk):
     m=pk
@@ -10706,6 +10883,7 @@ def voucherregisterdebit(request,pk):
         else:
             return redirect('/')
         cmp=Companies.objects.get(id=t_id)
+        tally = Companies.objects.filter(id=t_id)
         print(pk)
         voucher=debitnote.objects.filter(date__month=pk)
         print(voucher)
@@ -10739,7 +10917,7 @@ def voucherregisterdebit(request,pk):
             msg1="01-July-22 to 31-July-22"               
         
 
-        return render(request,'voucherregisterdebit.html',{'voucher':voucher,'total':total,'cmp':cmp,'msg1':msg1})
+        return render(request,'voucherregisterdebit.html',{'tally':tally,'voucher':voucher,'total':total,'cmp':cmp,'msg1':msg1})
 
 # ananthakrishnan
 
@@ -10762,8 +10940,9 @@ def account_books_create_ledger(request):
         else:
             return redirect('/')
         # group = tally_ledger.objects.all()
+        tally = Companies.objects.filter(id=t_id)
         group = tally_ledger.objects.filter(company=t_id)
-        context = {'group':group}
+        context = {'group':group,'tally':tally}
         return render(request,'account_books_ledger_load_create_ledger.html',context) 
 
 def account_create_ledger(request):
@@ -10857,6 +11036,12 @@ def account_create_ledger(request):
             return redirect('/')
 
 def account_books_ledger_show2(request,id):
+    if 't_id' in request.session:
+        if request.session.has_key('t_id'):
+            t_id = request.session['t_id']
+        else:
+            return redirect('/')
+    tally = Companies.objects.filter(id=t_id)
     voucher = Account_books_Ledger_Voucher.objects.filter(ledger=id)
     ledger = Account_Books_Ledger.objects.filter(id=id)
     le = Account_Books_Ledger.objects.get(id=id)
@@ -10904,7 +11089,8 @@ def account_books_ledger_show2(request,id):
         'total_credit':total_credit,
         'closing_balance':closing_balance,
         'type2':type2,
-        'le':le
+        'le':le,
+        'tally':tally,
         
         
         
@@ -10914,6 +11100,12 @@ def account_books_ledger_show2(request,id):
     return render(request,'account_books_ledger_show2.html',context) 
 
 def cash_bank_books_cash_bank_summary(request):
+    if 't_id' in request.session:
+        if request.session.has_key('t_id'):
+            t_id = request.session['t_id']
+        else:
+            return redirect('/')
+    tally = Companies.objects.filter(id=t_id)
     group = Account_Books_Group_under.objects.all()
     balance = cash_bank_books_Group_Under_closing_balance.objects.all()
     total_debit=0
@@ -10923,7 +11115,7 @@ def cash_bank_books_cash_bank_summary(request):
             total_debit += i.total_closing_balance_debit
         if  i.total_closing_balance_credit:  
             total_credit += i.total_closing_balance_credit
-    context = { 'group':group,  'total_debit':total_debit, 'total_credit':total_credit,}
+    context = { 'group':group,  'total_debit':total_debit, 'total_credit':total_credit,'tally':tally}
     return render(request,'cash_bank_books_cash_bank_summary.html',context)
 
 def cash_bank_books_group_summary(request,id):
@@ -11292,8 +11484,9 @@ def Select_Group_Voucher(request):
         else:
             return redirect('/')
     # display=tally_group.objects.all()
+        tally = Companies.objects.filter(id=t_id)
         display=tally_group.objects.filter(company=t_id)
-        context={'display':display}
+        context={'display':display,'tally':tally}
         return render(request,'select_grp_vchr.html',context)
 
 def Creat_Group_Voucher(request):
@@ -11302,9 +11495,10 @@ def Creat_Group_Voucher(request):
             t_id = request.session['t_id']
         else:
             return redirect('/')
+        tally = Companies.objects.filter(id=t_id)
         # display=tally_group.objects.all()
         display=tally_group.objects.filter(company=t_id)
-        context={'display':display}
+        context={'display':display,'tally':tally}
         return render(request,'crt_grp_voucher.html',context)
 
 def Group_Voucher_Create(request):
@@ -11338,6 +11532,13 @@ def Group_Voucher_Create(request):
             return redirect("Select_Group_Voucher")
 
 def Group_Voucher(request,pk):
+    if 't_id' in request.session:
+        if request.session.has_key('t_id'):
+            t_id = request.session['t_id']
+        else:
+            return redirect('/')
+    # display=tally_group.objects.all()
+        tally = Companies.objects.filter(id=t_id)
     display=Group_Voucher_Model.objects.filter(id=pk)
     sum1=0
     sum2=0
@@ -11349,7 +11550,7 @@ def Group_Voucher(request,pk):
     for i in display:
         sum3+=i.Open_Balance
     sum4=sum3-(sum1-sum2)
-    context={'display':display,'sum1':sum1,'sum2':sum2,'sum3':sum3,'sum4':sum4}
+    context={'display':display,'sum1':sum1,'sum2':sum2,'sum3':sum3,'sum4':sum4,'tally':tally}
     return render(request,'grp_voucher.html',context)
 
 def Group_Voucher_Summary(request,pk):
@@ -11503,9 +11704,11 @@ def Select_Groups(request):
         else:
             return redirect('/')
         # display=tally_group.objects.all()
+        tally = Companies.objects.filter(id=t_id)
         display=tally_group.objects.filter(company=t_id)
-        context={'display':display}
+        context={'display':display,'tally':tally}
         return render(request,'select_grp.html',context)
+
 
 def Creat_Group_Summary(request):
     if 't_id' in request.session:
@@ -11513,9 +11716,10 @@ def Creat_Group_Summary(request):
             t_id = request.session['t_id']
         else:
             return redirect('/')
+        tally = Companies.objects.filter(id=t_id)
         # display=tally_group.objects.all()
         display=tally_group.objects.filter(company=t_id)
-        context={'display':display}
+        context={'display':display,'tally':tally}
         return render(request,'crt_grp_sumry.html',context)
 
 def Group_Summary_Create(request):
@@ -11524,6 +11728,7 @@ def Group_Summary_Create(request):
             t_id = request.session['t_id']
         else:
             return redirect('/')
+        tally = Companies.objects.filter(id=t_id)
         if request.method=='POST':
             gname=request.POST['gname']
             galias=request.POST['alias']
@@ -11546,9 +11751,15 @@ def Group_Summary_Create(request):
                     company_id=t_id
                     )          
             grp.save()
-            return redirect('Select_Groups')
+            return redirect('Select_Groups',{'tally':tally})
 
 def Group_Summary(request,pk):
+    if 't_id' in request.session:
+        if request.session.has_key('t_id'):
+            t_id = request.session['t_id']
+        else:
+            return redirect('/')
+    tally = Companies.objects.filter(id=t_id)
     display=tally_group.objects.get(id=pk)
     data=First_Group_Summary_Model.objects.filter(Group_Name=display)
     sum1=0
@@ -11557,7 +11768,7 @@ def Group_Summary(request,pk):
         sum1+=i.Credit
     for i in data:
         sum2+=i.Debit
-    context={'data':data,'display':display,'sum1':sum1,'sum2':sum2}
+    context={'data':data,'display':display,'sum1':sum1,'sum2':sum2,'tally':tally}
     return render(request,'grp_summary.html',context)
 
 def Sec_Group_Summary(request,pk):
@@ -11704,10 +11915,16 @@ def alter_payrol_emp_add2(request):
     return redirect('/') 
 
 def alter_payrol_emp_gredit(request,pk):
+    if 't_id' in request.session:
+        if request.session.has_key('t_id'):
+            t_id = request.session['t_id']
+        else:
+            return redirect('/')
+        tally = Companies.objects.filter(id=t_id)
     data=Create_employeegroup.objects.get(id=pk)
     data2=Create_employeegroup.objects.all()
     context={'p1':data,
-    'emp':data2}
+    'emp':data2,'tally':tally}
     return render(request,'alter_payrol_gredit.html',context) 
 
 def alter_payrol_emp_gredit2(request,pk):
@@ -11734,11 +11951,18 @@ def alter_payrol_employee(request):
     return render(request,'alter_payrol_employe2.html',context)
 
 def alter_payrol_employee_edit(request,pk):
+    if 't_id' in request.session:
+        if request.session.has_key('t_id'):
+            t_id = request.session['t_id']
+            und=CreateStockGrp.objects.filter(comp=t_id)
+        else:
+            return redirect('/')
+        tally=Companies.objects.filter(id=t_id)
     std=Create_employeegroup.objects.all()
     p=Employee.objects.get(id=pk)
     p1=add_bank.objects.get(id=pk)
     p2=E_found_trasfer.objects.get(id=pk)
-    return render(request,'alter_payrol_employee_edit.html',{'std':std,'p':p,'p1':p1,'p2':p2})
+    return render(request,'alter_payrol_employee_edit.html',{'std':std,'p':p,'p1':p1,'p2':p2,'tally':tally})
 
 def alter_payrol_employee_edit2(request,pk):
     std=Employee.objects.get(id=pk)
@@ -11798,10 +12022,17 @@ def alter_payrol_unit2(request):
     return render(request,'alter_payrol_unit2.html',{'data':p,'tally':tally})
 
 def alter_payrol_unit_edit(request,pk):
+    if 't_id' in request.session:
+        if request.session.has_key('t_id'):
+            t_id = request.session['t_id']
+            und=CreateStockGrp.objects.filter(comp=t_id)
+        else:
+            return redirect('/')
+    tally=Companies.objects.filter(id=t_id)
     uq=unitQuantityCode.objects.all()
     ps=units.objects.all()
     std=units.objects.get(id=pk)
-    return render(request,'alter_payrol_unit_edit.html',{'ps':ps,'uq':uq,'std':std})
+    return render(request,'alter_payrol_unit_edit.html',{'ps':ps,'uq':uq,'std':std,'tally':tally})
 
 def alter_payrol_unit_edit2(request,pk):
     std=units.objects.get(id=pk)
@@ -11828,11 +12059,18 @@ def alter_payrol_attendence(request):
     return render(request,'alter_payrol_attendence2.html',{'p':data,'tally':tally})
 
 def alter_payrol_attendence_edit(request,pk):
+    if 't_id' in request.session:
+        if request.session.has_key('t_id'):
+            t_id = request.session['t_id']
+            und=CreateStockGrp.objects.filter(comp=t_id)
+        else:
+            return redirect('/')
+    tally=Companies.objects.filter(id=t_id)
     data=Create_attendence.objects.get(id=pk)
     data2=Create_attendence.objects.all()
     pk=units.objects.all()
     context={'p':data,
-    'std':data2,'pk':pk}
+    'std':data2,'pk':pk,'tally':tally}
     return render(request,'alter_payrol_attendence_edit.html',context) 
 
 def alter_payrol_attendence_edit2(request,pk):
@@ -11858,61 +12096,74 @@ def alter_payrol_payheads(request):
     return render(request,'alter_payrol_payheads2.html',{'p':data,'tally':tally})  
 
 def alter_payrol_payhead_edit2(request,pk):
+    if 't_id' in request.session:
+        if request.session.has_key('t_id'):
+            t_id = request.session['t_id']
+        else:
+            return redirect('/')
+        tally=Companies.objects.filter(id=t_id)
     if request.method=='POST':
-        data=create_payhead.objects.get(id=pk)
-        data.name=request.POST.get('name')
-        data.alias=request.POST.get('alias')
-        data.pay_type=request.POST.get('payhead')
-        data.income_type=request.POST.get('income')
-        data.under=request.POST.get('under')
-        data.affect_net=request.POST.get('netsalary')
-        data.payslip=request.POST.get('payslip')
-        data.calculation_of_gratuity=request.POST.get('caltype')
-        data.cal_type=request.POST.get('ctype')
-        data.calculation_period=request.POST.get('caltype')
-        data.leave_withpay=request.POST.get('attendence with pay')
-        data.leave_with_out_pay=request.POST.get('Attendance with out pay')
-        data.production_type=request.POST.get('ptype')
-        data.opening_balance=request.POST.get('balance')
-        data.save()
+            data=create_payhead.objects.get(id=pk)
+            data.name=request.POST.get('name')
+            data.alias=request.POST.get('alias')
+            data.pay_type=request.POST.get('payhead')
+            data.income_type=request.POST.get('income')
+            data.under=request.POST.get('under')
+            data.affect_net=request.POST.get('netsalary')
+            data.payslip=request.POST.get('payslip')
+            data.calculation_of_gratuity=request.POST.get('caltype')
+            data.cal_type=request.POST.get('ctype')
+            data.calculation_period=request.POST.get('caltype')
+            data.leave_withpay=request.POST.get('attendence with pay')
+            data.leave_with_out_pay=request.POST.get('Attendance with out pay')
+            data.production_type=request.POST.get('ptype')
+            data.opening_balance=request.POST.get('balance')
+            data.save()
 
-        idd=data
+            idd=data
 
-        data2=compute_information.objects.get(id=pk)
-        data2.compute=request.POST.get('compute')
-        data2.effective_from=request.POST.get('effective_from')
-        data2.amount_upto=request.POST.get('amount_upto')
-        data2.slab_type=request.POST.get('slab_type')
-        data2.value=request.POST.get('value')
-        data2.Pay_head_id=idd
+            data2=compute_information.objects.get(id=pk)
+            data2.compute=request.POST.get('compute')
+            data2.effective_from=request.POST.get('effective_from')
+            data2.amount_upto=request.POST.get('amount_upto')
+            data2.slab_type=request.POST.get('slab_type')
+            data2.value=request.POST.get('value')
+            data2.Pay_head_id=idd
 
-        data2.save()
+            data2.save()
 
 
-        data3=Rounding.objects.get(id=pk)
-        data3.Rounding_Method=request.POST.get('roundmethod')
-        data3.Round_limit=request.POST.get('limit')
-        data3.pay_head_id=idd
-        data3.save()
+            data3=Rounding.objects.get(id=pk)
+            data3.Rounding_Method=request.POST.get('roundmethod')
+            data3.Round_limit=request.POST.get('limit')
+            data3.pay_head_id=idd
+            data3.save()
 
-        data4=gratuity.objects.get(id=pk)
-        data4.days_of_months=request.POST.get('days_of_months')
-        data4.number_of_months_from=request.POST.get('from')
-        data4.to=request.POST.get('to')
-        data4.calculation_per_year=request.POST.get('eligiibility')
-        data4.pay_head_id=idd
-        data4.save()
-        return redirect('alter_payrol_payheads')
-    return render(request,'alter_payrol_payhead_edit.html')
+            data4=gratuity.objects.get(id=pk)
+            data4.days_of_months=request.POST.get('days_of_months')
+            data4.number_of_months_from=request.POST.get('from')
+            data4.to=request.POST.get('to')
+            data4.calculation_per_year=request.POST.get('eligiibility')
+            data4.pay_head_id=idd
+            data4.save()
+            return redirect('alter_payrol_payheads')
+    return render(request,'alter_payrol_payhead_edit.html',{'tally':tally})
     
 
 def alter_payrol_payhead_edit(request,pk):
+    if 't_id' in request.session:
+        if request.session.has_key('t_id'):
+            t_id = request.session['t_id']
+            und=CreateStockGrp.objects.filter(comp=t_id)
+        else:
+            return redirect('/')
+    tally=Companies.objects.filter(id=t_id)
     data=create_payhead.objects.get(id=pk)
     data2=compute_information.objects.get(id=pk)
     data3=Rounding.objects.get(id=pk)
     data4=gratuity.objects.get(id=pk)
     context={'p':data,'p2':data2,
-    'p3':data3,'p4':data4
+    'p3':data3,'p4':data4,'tally':tally
     }
     return render(request,'alter_payrol_payhead_edit.html',context) 
 
@@ -11928,9 +12179,16 @@ def alter_payrol_add_voucher2(request):
     return render(request,'alter_payrol_payroll2.html',{'data':emp,'tally':tally}) 
 
 def alter_payrol_add_voucher_edit(request,pk):
+    if 't_id' in request.session:
+        if request.session.has_key('t_id'):
+            t_id = request.session['t_id']
+            und=CreateStockGrp.objects.filter(comp=t_id)
+        else:
+            return redirect('/')
+    tally=Companies.objects.filter(id=t_id)
     emp=create_VoucherModels.objects.get(id=pk)
     data2=create_VoucherModels.objects.all()
-    context={'p':emp,
+    context={'p':emp,'tally':tally,
     'data':data2}
     return render(request,'alter_payrol_payrolledit.html',context) 
 
@@ -12010,7 +12268,7 @@ def edit_gst_details(request,pk):
             gsts.send_ewaybill=request.POST.get('send_eway_bill')
             gsts.save()
             print("added")
-            return render(request,'alter_gst_details.html',{'i':gsts})
+            return render(request,'alter_gst_details.html',{'i':gsts,'tally':tally})
         return redirect('/')
 
 
@@ -12041,7 +12299,7 @@ def edit_tds_details(request,pk):
             tdss.ignore_it=request.POST.get('it_tds')
             tdss.active_tds=request.POST.get('act_tds')
             tdss.save()
-            return render(request,'alter_tds_details.html',{'i':tdss})
+            return render(request,'alter_tds_details.html',{'i':tdss,'tally':tally})
         return redirect('/')
 
 def alter_pan_details(request):
@@ -12067,7 +12325,7 @@ def edit_pan_details(request,pk):
             pans.cin=request.POST.get('cin')
             
             pans.save()
-            return render(request,'alter_pan_details.html',{'i':pans})
+            return render(request,'alter_pan_details.html',{'i':pans,'tally':tally})
         return redirect('/')
 
 def alter_load_gst_details(request):
@@ -12231,6 +12489,7 @@ def alter_stockgroup(request,pk):
             und=CreateStockGrp.objects.filter(comp=t_id)
         else:
             return redirect('/')
+        tally=Companies.objects.filter(id=t_id)
     std=CreateStockGrp.objects.get(id=pk)
     #und=stockgroupcreation.objects.all()
     if request.method =='POST':
@@ -12240,7 +12499,7 @@ def alter_stockgroup(request,pk):
          std.quantities=request.POST['quantities']
          std.save()   
          return redirect('stock_group_alter_list') 
-    return render(request,'alter_stockgrp_edit.html',{'std':std,'und':und})
+    return render(request,'alter_stockgrp_edit.html',{'std':std,'und':und,'tally':tally})
 
 #..................Alter stock category...................
 
@@ -12255,6 +12514,13 @@ def stock_category_alter_list(request):
         return render(request,'alter_stock_category_list.html',{'data':data,'tally':tally})
 
 def alter_stockcatagory(request,pk):
+    if 't_id' in request.session:
+        if request.session.has_key('t_id'):
+            t_id = request.session['t_id']
+            und=CreateStockGrp.objects.filter(comp=t_id)
+        else:
+            return redirect('/')
+        tally=Companies.objects.filter(id=t_id)
     std=stockcatagorycreation.objects.get(id=pk)
     cagy=stockcatagorycreation.objects.all()
     if request.method =='POST':
@@ -12263,7 +12529,7 @@ def alter_stockcatagory(request,pk):
          std.under=request.POST['under_name']
          std.save()   
          return redirect('stock_category_alter_list') 
-    return render(request,'alter_stock_cate_edit.html',{'std':std,'cagy':cagy})
+    return render(request,'alter_stock_cate_edit.html',{'std':std,'cagy':cagy,'tally':tally})
 
 #........................stock unit..................................
 
@@ -12280,6 +12546,14 @@ def stock_unit(request):
 
 
 def alter_unit(request,pk):
+    if 't_id' in request.session:
+        if request.session.has_key('t_id'):
+            t_id = request.session['t_id']
+            und=CreateStockGrp.objects.filter(comp=t_id)
+        else:
+            return redirect('/')
+        tally=Companies.objects.filter(id=t_id)
+  
     std=unit_simple.objects.get(id=pk)
     if request.method =='POST':
          std.type=request.POST['type']
@@ -12289,7 +12563,7 @@ def alter_unit(request,pk):
          std.decimal=request.POST['decimal']
          std.save()
          return redirect('stock_unit')
-    return render(request,'alter_stockunit_edit.html',{'std':std})    
+    return render(request,'alter_stockunit_edit.html',{'std':std,'tally':tally})    
 
 
 def alter_unit_2(request,pk):
@@ -12317,6 +12591,13 @@ def alter_godown(request):
     return render(request,'alter_goddown_list.html',{'data':data,'tally':tally})
 
 def alter_godown_edit(request,pk):
+    if 't_id' in request.session:
+        if request.session.has_key('t_id'):
+            t_id = request.session['t_id']
+            und=CreateStockGrp.objects.filter(comp=t_id)
+        else:
+            return redirect('/')
+        tally=Companies.objects.filter(id=t_id)
     std=CreateGodown.objects.get(id=pk)
     data=CreateGodown.objects.all()
     if request.method=='POST':
@@ -12325,7 +12606,7 @@ def alter_godown_edit(request,pk):
         std.under_name=request.POST['under_name']
         std.save()
         return redirect('alter_godown')
-    return render(request,'alter_godown_edit.html',{'std':std,'data':data})
+    return render(request,'alter_godown_edit.html',{'std':std,'data':data,'tally':tally})
 
 #......................price level.............................
 def alter_pricelevel(request):
@@ -12361,6 +12642,13 @@ def alter_stockitem(request):
 
 
 def alter_stockitem_edit(request,pk):
+    if 't_id' in request.session:
+        if request.session.has_key('t_id'):
+            t_id = request.session['t_id']
+            und=CreateStockGrp.objects.filter(comp=t_id)
+        else:
+            return redirect('/')
+        tally=Companies.objects.filter(id=t_id)
     std=stock_itemcreation.objects.get(id=pk)
     u=unit_simple.objects.all()
     u2=unit_compound.objects.all()
@@ -12385,7 +12673,7 @@ def alter_stockitem_edit(request,pk):
         std.value=request.POST['value'] 
         std.save()
         return redirect('alter_stockitem')
-    return render(request,'alter_stockitem_edit.html',{'std':std,'u':u,'u2':u2,'gd':gd,'grp':grp}) 
+    return render(request,'alter_stockitem_edit.html',{'std':std,'u':u,'u2':u2,'gd':gd,'grp':grp,'tally':tally}) 
 
 
 
@@ -12414,6 +12702,7 @@ def chart_stockgroup(request,pk):
             und=CreateStockGrp.objects.filter(comp=t_id)
         else:
             return redirect('/')
+        tally = Companies.objects.filter(id=t_id)
     std=CreateStockGrp.objects.get(id=pk)
     #und=stockgroupcreation.objects.all()
     if request.method =='POST':
@@ -12423,7 +12712,7 @@ def chart_stockgroup(request,pk):
          std.quantities=request.POST['quantities']
          std.save()   
          return redirect('stock_group_chart_list') 
-    return render(request,'chart_stockgrp_edit.html',{'std':std,'und':und})
+    return render(request,'chart_stockgrp_edit.html',{'std':std,'und':und,'tally':tally})
 
 
 #....................stock category......................................
@@ -12441,6 +12730,13 @@ def stock_category_chart_list(request):
     return render(request,'chart_stock_category_list.html',{'data':data,'tally':tally})
 
 def chart_stockcatagory(request,pk):
+    if 't_id' in request.session:
+        if request.session.has_key('t_id'):
+            t_id = request.session['t_id']
+            und=CreateStockGrp.objects.filter(comp=t_id)
+        else:
+            return redirect('/')
+        tally = Companies.objects.filter(id=t_id)
     std=stockcatagorycreation.objects.get(id=pk)
     cagy=stockcatagorycreation.objects.all()
     if request.method =='POST':
@@ -12449,7 +12745,7 @@ def chart_stockcatagory(request,pk):
          std.under=request.POST['under_name']
          std.save()   
          return redirect('stock_category_chart_list') 
-    return render(request,'chart_stock_cate_edit.html',{'std':std,'cagy':cagy})
+    return render(request,'chart_stock_cate_edit.html',{'std':std,'cagy':cagy,'tally':tally})
 
 
 #....................STOCK ITEM................................................
@@ -12467,6 +12763,13 @@ def chart_stockitem(request):
 
 
 def chart_stockitem_edit(request,pk):
+    if 't_id' in request.session:
+        if request.session.has_key('t_id'):
+            t_id = request.session['t_id']
+            und=CreateStockGrp.objects.filter(comp=t_id)
+        else:
+            return redirect('/')
+        tally = Companies.objects.filter(id=t_id)
     std=stock_itemcreation.objects.get(id=pk)
     u=unit_simple.objects.all()
     gd=CreateGodown.objects.all()
@@ -12488,7 +12791,7 @@ def chart_stockitem_edit(request,pk):
         std.value=request.POST['value'] 
         std.save()
         return redirect('chart_stockitem')
-    return render(request,'chart_stockitem_edit.html',{'std':std,'u':u,'gd':gd,'grp':grp}) 
+    return render(request,'chart_stockitem_edit.html',{'std':std,'u':u,'gd':gd,'grp':grp,'tally':tally}) 
 
 #...........................unit creation..................................................
 
@@ -12506,6 +12809,13 @@ def chart_stock_unit(request):
 
 
 def chart_unit(request,pk):
+    if 't_id' in request.session:
+        if request.session.has_key('t_id'):
+            t_id = request.session['t_id']
+            und=CreateStockGrp.objects.filter(comp=t_id)
+        else:
+            return redirect('/')
+        tally = Companies.objects.filter(id=t_id)
     std=unit_simple.objects.get(id=pk)
     if request.method =='POST':
          std.type=request.POST['type']
@@ -12515,7 +12825,7 @@ def chart_unit(request,pk):
          std.decimal=request.POST['decimal']
          std.save()
          return redirect('chart_stock_unit')
-    return render(request,'chart_stockunit_edit.html',{'std':std})    
+    return render(request,'chart_stockunit_edit.html',{'std':std,'tally':tally})    
 
 
 def chart_unit_2(request,pk):
@@ -12544,6 +12854,13 @@ def chart_godown(request):
     return render(request,'chart_goddown_list.html',{'data':data,'tally':tally})
 
 def chart_godown_edit(request,pk):
+    if 't_id' in request.session:
+        if request.session.has_key('t_id'):
+            t_id = request.session['t_id']
+            und=CreateStockGrp.objects.filter(comp=t_id)
+        else:
+            return redirect('/')
+        tally = Companies.objects.filter(id=t_id)
     std=CreateGodown.objects.get(id=pk)
     data=CreateGodown.objects.all()
     if request.method=='POST':
@@ -12552,7 +12869,7 @@ def chart_godown_edit(request,pk):
         std.under_name=request.POST['under_name']
         std.save()
         return redirect('chart_godown')
-    return render(request,'chart_godown_edit.html',{'std':std,'data':data})
+    return render(request,'chart_godown_edit.html',{'std':std,'data':data,'tally':tally})
 
 #...................................Price level...............................
 
@@ -12709,6 +13026,11 @@ def pay_voucher(request,pk):
     return render(request,'payhead_voucher.html',{'std':std,'vouch2':vouch2,'total_debit':total_debit,'total_credit':total_credit,'opening_balance':opening_balance})
 
 def stock_voucher(request,pk):
+    if 't_id' in request.session:
+        if request.session.has_key('t_id'):
+            t_id = request.session['t_id']
+        else:
+            return redirect('/')
     std=stock_itemcreation.objects.get(id=pk)
     vouch=voucherlist.objects.all()
     total_value=0
@@ -12728,7 +13050,7 @@ def stock_voucher(request,pk):
     std.rate_of_duty=closing_val
     #std.additional=closing_qun
     std.save()    
-    
+    tally=Companies.objects.filter(id=t_id)
     context={
         'std':std,
         'vouch':vouch,
@@ -12738,6 +13060,7 @@ def stock_voucher(request,pk):
         'total_purchase_quntity':total_qun,
         'closing_qun':closing_qun,
         'closing_val':closing_val,
+        'tally':tally
         }        
     return render(request,'stock_voucher.html',context)
 
@@ -12935,11 +13258,17 @@ def profit(request):
 
 
 
-def  payhead_list(request):
+def payhead_list(request):
+    if 't_id' in request.session:
+        if request.session.has_key('t_id'):
+            t_id = request.session['t_id']
+        else:
+            return redirect('/')
     std=create_payhead.objects.filter(under='Direct_Incomes')
     stm=tally_ledger.objects.filter(under='Direct_Incomes')
     balance=create_payhead.objects.all()
     balance_le=tally_ledger.objects.all()
+    tally = Companies.objects.filter(id=t_id)
     total=0
     total_d=0
     for i in balance:
@@ -12965,11 +13294,17 @@ def  payhead_list(request):
          
     
     
-    return render(request,'payhead_items.html',{'std':std,'stm':stm,'total':total,'total_d':total_d}) 
+    return render(request,'payhead_items.html',{'std':std,'stm':stm,'total':total,'total_d':total_d,'tally':tally}) 
 
 
 
 def direct_exprenses(request):
+    if 't_id' in request.session:
+        if request.session.has_key('t_id'):
+            t_id = request.session['t_id']
+        else:
+            return redirect('/')
+    tally = Companies.objects.filter(id=t_id)
     std=create_payhead.objects.filter(under='Direct Expenses')
     stm=tally_ledger.objects.filter(under='Direct_Expenses')
     total=0
@@ -12993,10 +13328,16 @@ def direct_exprenses(request):
         else :
             total+=int(p.credit_period) 
             #total_d+=int(p.creditdays_voucher)
-    return render(request,'direct_expenses.html',{'std':std,'stm':stm,'total':total,'total_d':total_d}) 
+    return render(request,'direct_expenses.html',{'std':std,'stm':stm,'total':total,'total_d':total_d,'tally':tally}) 
 
 def sales(request):
-    std=tally_ledger.objects.filter(under='Sales_Account')
+    if 't_id' in request.session:
+        if request.session.has_key('t_id'):
+            t_id = request.session['t_id']
+        else:
+            return redirect('/')
+        tally = Companies.objects.filter(id=t_id)
+        std=tally_ledger.objects.filter(under='Sales_Account')
   
     total=0
     total_d=0
@@ -13010,27 +13351,38 @@ def sales(request):
     
         
                  
-    return render(request,'sales_accounts.html',{'std':std,'total':total,'total_d':total_d})
+    return render(request,'sales_accounts.html',{'std':std,'total':total,'total_d':total_d,'tally':tally})
 
 def purchase(request):
-    std=tally_ledger.objects.filter(under='Purchase_Account')
-    
-    total=0
-    total_d=0
-    for i in std:
-         if (i.credit_period== ''):
-                total+=0
-         else:
-            total+=int(i.credit_period)
-            #total_d+=int(i.creditdays_voucher)
-    return render(request,'purchase_list.html',{'std':std,'total':total,'total_d':total_d})
+    if 't_id' in request.session:
+        if request.session.has_key('t_id'):
+            t_id = request.session['t_id']
+        else:
+            return redirect('/')
+        std=tally_ledger.objects.filter(under='Purchase_Account')
+        
+        total=0
+        total_d=0
+        for i in std:
+            if (i.credit_period== ''):
+                    total+=0
+            else:
+                total+=int(i.credit_period)
+                #total_d+=int(i.creditdays_voucher)
+        tally = Companies.objects.filter(id=t_id)
+        return render(request,'purchase_list.html',{'std':std,'total':total,'total_d':total_d,'tally':tally})
 
 
 
 
 def stock_month(request,pk):
+    if 't_id' in request.session:
+        if request.session.has_key('t_id'):
+            t_id = request.session['t_id']
+        else:
+            return redirect('/')
     std=stock_itemcreation.objects.get(id=pk)
-    
+    tally=Companies.objects.filter(id=t_id)
     vouch=voucherlist.objects.all()
     total_value=0
     total_qunity=0
@@ -13063,11 +13415,18 @@ def stock_month(request,pk):
         'total_purchase_quntity':total_qun,
         'closing_qun':closing_qun,
         'closing_val':closing_val,
+        'tally':tally
         }        
     
     return render(request,'stock_month.html',context)
 
 def item_list(request,pk):
+    if 't_id' in request.session:
+        if request.session.has_key('t_id'):
+            t_id = request.session['t_id']
+        else:
+            return redirect('/')
+    tally = Companies.objects.filter(id=t_id)
     std=stock_itemcreation.objects.filter(under=pk)
     ptm=CreateStockGrp.objects.get(id=pk)
     #vouch=add_voucher.objects.all()
@@ -13100,7 +13459,7 @@ def item_list(request,pk):
     ptm.quantities=total   
     ptm.save()
         
-    return render(request,'items.html',{'std':std,'total':total,'total_qty':total_qty,}) 
+    return render(request,'items.html',{'std':std,'total':total,'total_qty':total_qty,'tally':tally}) 
  
 def items_2(request,pk):
     ptm=stock_itemcreation.objects.filter(under=pk)
@@ -13145,6 +13504,12 @@ def items_2(request,pk):
     return render(request,'item_2.html',{'ptm':ptm,'closing_val':closing_val,'closing_qun':closing_qun,'total':total})
     
 def stockgroup(request):
+    if 't_id' in request.session:
+        if request.session.has_key('t_id'):
+            t_id = request.session['t_id']
+        else:
+            return redirect('/')
+    tally = Companies.objects.filter(id=t_id)
     ptm=CreateStockGrp.objects.all()
     std=stock_itemcreation.objects.all()
     vouch=voucherlist.objects.all()
@@ -13170,7 +13535,7 @@ def stockgroup(request):
                 
     # closing_value=total_val-total_value
     # closing_quntity=total_qun-total_qunity
-    return render(request,'stockgroup1.html',{'std':std,'ptm':ptm,'total_val':total_val,'total_qun':total_qun})
+    return render(request,'stockgroup1.html',{'tally':tally,'std':std,'ptm':ptm,'total_val':total_val,'total_qun':total_qun})
 
 
 #------------------------profit and loss updation----------------
@@ -13183,7 +13548,7 @@ def stock_group2(request):
             return redirect('/')
         
         comp = Companies.objects.get(id=uid)
-
+        tally = Companies.objects.filter(id=uid)
         group = CreateStockGrp.objects.filter(comp = comp).values().exclude(name = 'Primary')
 
         sum = item = 0
@@ -13206,7 +13571,8 @@ def stock_group2(request):
                     'value' : value,
                     'sum' : sum,
                     'startdate' : startdate,
-                    'enddate' : enddate
+                    'enddate' : enddate,
+                    'tally':tally,
                 }
         
         return render(request, 'opening_stock_summary.html', context)
@@ -13223,7 +13589,7 @@ def profit_stock_group(request,pk):
         comp = Companies.objects.get(id=t_id)
         group = CreateStockGrp.objects.get(id = pk,comp = comp)
         item = stock_itemcreation.objects.filter(under_id = group.id,company = comp).values()
-
+        tally = Companies.objects.filter(id=t_id)
         value = sum = 0
         for i in item:
             
@@ -13264,7 +13630,8 @@ def profit_stock_group(request,pk):
                 # 'total_qty': total_qty,
                 # 'total_val' :total_val,
                 'startdate' : startdate,
-                'enddate' : enddate
+                'enddate' : enddate,
+                'tally':tally,
             }
 
         return render(request, 'profit_stock_group_summary.html',context)
@@ -13301,33 +13668,39 @@ def indirect(request):
 
 
 def indirect_expenses(request):
-    std=create_payhead.objects.filter(under='Indirect Expenses')
-    stm=tally_ledger.objects.filter(under='Expences_Indirect')
-    
-    total=0
-    total_d=0
-    for i in std:
-         if (i.leave_with_out_pay== ''):
-                total_d+=0
-         else:
-             total_d+=int(i.leave_with_out_pay)
-                    
-         if i.leave_withpay=='':
-              total+=0       
-         else:
-            total+=int(i.leave_withpay)
-            
-        
-        
-    for p in stm:
-        if p.credit_period== '':
-            total+=0
+    if 't_id' in request.session:
+        if request.session.has_key('t_id'):
+            t_id = request.session['t_id']
         else:
-            total+=int(p.credit_period) 
-            # total_d+=int(p.creditdays_vouchers)
-    
-    
-    return render(request,'indirect_expences.html',{'std':std,'stm':stm,'total':total,'total_d':total_d})
+            return redirect('/')
+        tally = Companies.objects.filter(id=t_id)
+        std=create_payhead.objects.filter(under='Indirect Expenses')
+        stm=tally_ledger.objects.filter(under='Expences_Indirect')
+        
+        total=0
+        total_d=0
+        for i in std:
+            if (i.leave_with_out_pay== ''):
+                    total_d+=0
+            else:
+                total_d+=int(i.leave_with_out_pay)
+                        
+            if i.leave_withpay=='':
+                total+=0       
+            else:
+                total+=int(i.leave_withpay)
+                
+            
+            
+        for p in stm:
+            if p.credit_period== '':
+                total+=0
+            else:
+                total+=int(p.credit_period) 
+                # total_d+=int(p.creditdays_vouchers)
+        
+        
+        return render(request,'indirect_expences.html',{'std':std,'stm':stm,'total':total,'total_d':total_d,'tally':tally})
 
 
 
@@ -13381,7 +13754,7 @@ def payment_vouchers(request):
      
         v  = 1 if payment_voucher.objects.filter(company = comp).values('pid').last() is None else payment_voucher.objects.filter(company = comp).values('pid').last()['pid']+1
         
-       
+        tally = Companies.objects.filter(id=t_id)
         context = {
                     'company' : comp ,
                     'vouch' : vouch,
@@ -13390,6 +13763,7 @@ def payment_vouchers(request):
                     'ledg' : ledg_grp,
                     'ledg_all' : ledg_grp_all,
                     'v' : v,
+                    'tally':tally
                 }
         return render(request,'payment_voucher.html',context)
 
@@ -13498,7 +13872,7 @@ def receipt_vouchers(request):
       
         v  = 1 if receipt_voucher.objects.filter(company = comp).values('rid').last() is None else receipt_voucher.objects.filter(company = comp).values('rid').last()['rid']+1
 
-     
+        tally = Companies.objects.filter(id=t_id)
         context = {
                     'company' : comp ,
                     'vouch' : vouch,
@@ -13507,9 +13881,10 @@ def receipt_vouchers(request):
                     'ledg' : ledg_grp,
                     'ledg_all' : ledg_grp_all,
                     'v' : v,
+                    'tally':tally
                   }
         
-        return render(request,'receipt_voucher.html',context)
+    return render(request,'receipt_voucher.html',context)
         
         
 def create_receipt_voucher(request):
@@ -13819,6 +14194,12 @@ def bank_transaction(request):
 
 
 def credit_notess(request):
+    if 't_id' in request.session:
+        if request.session.has_key('t_id'):
+            t_id = request.session['t_id']
+        else:
+            return redirect('/')
+
     
     try:
         type=request.POST['ptype']
@@ -13860,11 +14241,11 @@ def credit_notess(request):
     name = request.POST.get('ptype')
 
     ldg=tally_ledger.objects.filter(company=cmp1,under__in=["Bank_Accounts" , "Cash_in_Hand" , "Sundry_Debtors" , "Sundry_Creditors" , "Branch_Divisions"])
-    
+    tally = Companies.objects.filter(id=t_id)
     ldg1=tally_ledger.objects.filter(company=cmp1,under="Sales_Account")
     item = stock_itemcreation.objects.filter(company = cmp1)
     godown = Godown_Items.objects.filter(comp=cmp1) 
-    context = {'cmp1': cmp1,'item':item,'ldg':ldg,"ldg1":ldg1,"crd_num":crd_num,"financial_year":financial_year,"dt_nm":dt_nm,"godown":godown, "setup_no":setup_no,"setup_nar":setup_nar,'now':now,'name':name} 
+    context = {'tally':tally,'cmp1': cmp1,'item':item,'ldg':ldg,"ldg1":ldg1,"crd_num":crd_num,"financial_year":financial_year,"dt_nm":dt_nm,"godown":godown, "setup_no":setup_no,"setup_nar":setup_nar,'now':now,'name':name} 
     return render(request,'credit_note.html',context)
 
 def itemdata(request):
@@ -14532,6 +14913,12 @@ def godown_crd(request):
     return redirect('/')  
 
 def debits_note(request):
+    if 't_id' in request.session:
+        if request.session.has_key('t_id'):
+            t_id = request.session['t_id']
+        else:
+            return redirect('/')
+
     
     try:
         type=request.POST['ptype']
@@ -14575,11 +14962,11 @@ def debits_note(request):
    
     
     ldg=tally_ledger.objects.filter(company=cmp1,under__in=["Bank_Accounts" , "Cash_in_Hand" , "Sundry_Debtors" , "Sundry_Creditors" , "Branch_Divisions"])
-    
+    tally = Companies.objects.filter(id=t_id)
     ldg1=tally_ledger.objects.filter(company=cmp1,under="Purchase_Account")
     item = stock_itemcreation.objects.filter(company = cmp1)
     godown = Godown_Items.objects.filter(comp=cmp1) 
-    context = {'cmp1': cmp1,'item':item,'ldg':ldg,"ldg1":ldg1,"crd_num":crd_num,"financial_year":financial_year,"dt_nm":dt_nm,"godown":godown, "setup_no":setup_no,"setup_nar":setup_nar,'now':now,'name':name} 
+    context = {'tally':tally,'cmp1': cmp1,'item':item,'ldg':ldg,"ldg1":ldg1,"crd_num":crd_num,"financial_year":financial_year,"dt_nm":dt_nm,"godown":godown, "setup_no":setup_no,"setup_nar":setup_nar,'now':now,'name':name} 
     return render(request,'debit_note.html',context)
 
 
@@ -15541,7 +15928,7 @@ def contra_vouchers(request):
 
         #for i in range(1,len(ledg_grp_all)):
         v=contra_voucher.objects.aggregate(Max('cid'))
-
+        tally = Companies.objects.filter(id=t_id)
         counter = 1 if v['cid__max'] is None else int(v['cid__max']) + 1
         context = {
                     'company' : cmp ,
@@ -15550,6 +15937,7 @@ def contra_vouchers(request):
                     'name':name,
                     'ledg' : ledg_grp,
                     'v' : counter,
+                    'tally':tally
                 }
         return render(request,'contra_voucher.html',context)
 
@@ -15752,7 +16140,7 @@ def stock_group_summary(request,pk):
             t_id = request.session['t_id']
         else:
             return redirect('/')
-
+        tally=Companies.objects.filter(id=t_id)
         comp = Companies.objects.get(id=t_id)
         group = CreateStockGrp.objects.get(id = pk,comp = comp)
         item = stock_itemcreation.objects.filter(under_id = group.id,company = comp).values()
@@ -15792,7 +16180,8 @@ def stock_group_summary(request,pk):
                 'item' : item,
                 'value' : value,
                 'startdate' : startdate,
-                'enddate' : enddate
+                'enddate' : enddate,
+                'tally':tally
             }
 
         return render(request, 'stock_group_summary.html',context)
@@ -15805,7 +16194,7 @@ def stock_item_monthly_summary(request,pk):
                 t_id = request.session['t_id']
             else:
                 return redirect('/')
-
+        tally=Companies.objects.filter(id=t_id)
         comp = Companies.objects.get(id=t_id)
    
         months = fmonths.objects.values()
@@ -15893,6 +16282,7 @@ def stock_item_monthly_summary(request,pk):
                     'sum_out_val' : sum_out_val,
                     'beg_date' : beg_date,
                     'new_date' : new_date,
+                    'tally':tally
                     
                 }
 
@@ -15909,7 +16299,7 @@ def stock_item_vouchers(request,pk,id):
             return redirect('/')
 
         comp = Companies.objects.get(id = t_id)
-        
+        tally=Companies.objects.filter(id=t_id)
         item = stock_itemcreation.objects.get(id = pk,company = comp)
         mnth = fmonths.objects.get(id = id)
 
@@ -15996,7 +16386,8 @@ def stock_item_vouchers(request,pk,id):
                     'sum_closing_qty': qty,
                     'sum_closing_val':val, 
                     'beg_date' : beg_date, 
-                    'end_date' : end_date
+                    'end_date' : end_date,
+                    'tally':tally,
                   }
     
         return render(request,'stock_item_vouchers.html',context)
@@ -16419,7 +16810,7 @@ def journal_vouchers(request):
             return redirect('/')
 
         comp = Companies.objects.get(id = t_id)
-        
+        tally = Companies.objects.filter(id=t_id)
         name = request.POST.get('jtype')
      
         vouch = Voucher.objects.get(company = comp,voucher_type = 'Journal',voucher_name = name)
@@ -16443,6 +16834,7 @@ def journal_vouchers(request):
                     'ledg' : ledg_grp,
                     'ledg_all' : ledg_grp_all,
                     'v' : counter,
+                    'tally':tally
                 }
         return render(request,'journal_voucher.html',context)
         
@@ -16850,13 +17242,20 @@ def employee_creation(request):
     return render(request,'employee_creation.html',{'emp':emp,'grp':grp})
     
 def price_levels(request):
+    if 't_id' in request.session:
+        if request.session.has_key('t_id'):
+            t_id = request.session['t_id']
+            und=CreateStockGrp.objects.filter(comp=t_id)
+        else:
+            return redirect('/')
+        tally = Companies.objects.filter(id=t_id)
     if request.method=="POST":
         number=request.POST['number']
         crt=Price_level_crt(number=number)
         crt.save()
         return redirect('price_levels')
     price=Price_level_crt.objects.all()
-    return render(request,'price_levels.html',{"price":price})
+    return render(request,'price_levels.html',{"price":price,'tally':tally})
 
 def pan_cin(request):
     pc=pancin.objects.all()
@@ -17225,6 +17624,7 @@ def stock_query(request,pk):
             t_id = request.session['t_id']
         else:
             return redirect('/')
+        tally=Companies.objects.filter(id=t_id)
         comp = Companies.objects.get(id = t_id)
         data=stock_itemcreation.objects.get(id=pk,company = comp)
         gr= CreateStockGrp.objects.get(comp = comp,id = data.under.id)
@@ -17277,6 +17677,7 @@ def stock_query(request,pk):
             'godown' : gdn,
             'total' : tot,
             'category' : categ,
+            'tally':tally
             
         }
 
@@ -17389,15 +17790,16 @@ def listofbank(request):
             return redirect('/')
 
         data=CreateStockGrp.objects.filter(comp = t_id)
+    tally=Companies.objects.filter(id=t_id)
+    ledg = tally_ledger.objects.filter(company = t_id, under__in = ['Bank_Accounts','Bank_OCC_AC','Bank_OD_A/c'])
 
-        ledg = tally_ledger.objects.filter(company = t_id, under__in = ['Bank_Accounts','Bank_OCC_AC','Bank_OD_A/c'])
-
-        context={
+    context={
                     'data':data, 
                     'ledg' : ledg,
+                    'tally':tally
                 }
 
-        return render(request,'list_bank.html',context)
+    return render(request,'list_bank.html',context)
 
 def deposit_slip(request, pk):
 
