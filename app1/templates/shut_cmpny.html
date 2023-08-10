@@ -55,8 +55,6 @@
                     <table>
                         {% for i in com %}
                         {% if i.status == 0 %}
-         
-                        {% else %}
                         <tr>
                             <a href="{% url 'shut' i.id %}"  >
                                     <div class="row">
@@ -67,6 +65,8 @@
                                 
                             </a>
                         </tr>
+                        {% else %}
+                        
                          {% endif %}
                         {% endfor %}
                     </table>

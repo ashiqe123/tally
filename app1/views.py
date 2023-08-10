@@ -147,8 +147,8 @@ def shut_cmpny(request):
             t_id = request.session['t_id']
         else:
             return redirect('/')
-        com=Companies.objects.all() 
-        tally=Companies.objects.filter(id=t_id)
+        tally = Companies.objects.filter(id=t_id)
+    com=Companies.objects.all()
     return render(request,'shut_cmpny.html',{'com':com,'tally':tally})
 
 def shut(request,pk):
@@ -2591,8 +2591,15 @@ def select_company1(request):
     return render(request,'select_company.html',{'comp1':comp,'tally':tally})
 
 def shut_company1(request):
-	com=Companies.objects.all() 
-	return render(request, 'shut_company.html',{'com':com})
+    if 't_id' in request.session:
+        if request.session.has_key('t_id'):
+            t_id = request.session['t_id']
+        else:
+            return redirect('/')
+    com=Companies.objects.all() 
+    tally = Companies.objects.filter(id=t_id)
+	
+    return render(request, 'shut_company.html',{'com':com,'tally':tally})
 
 def shut2(request,pk):
     c=Companies.objects.get(id=pk)
@@ -4410,7 +4417,7 @@ def shut_company(request):
         else:
             return redirect('/')
         tally = Companies.objects.filter(id=t_id)
-    com=Companies.objects.filter(status=True) 
+        com=Companies.objects.all()
     return render(request,'shut_company.html',{'com':com,'tally':tally})
 
 def shut1(request,pk):
